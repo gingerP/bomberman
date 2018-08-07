@@ -1,0 +1,33 @@
+{
+  "env": {
+    "browser": true,
+    "es6": true,
+    "node": true
+  },
+  "globals": {
+    "require": true,
+    "BombermanGameView": true,
+    "BombermanGame": true,
+    "BombermanViewUtils": true,
+    "BombermanUtils": true,
+    "RTCPeerConnection": true
+  },
+  "parserOptions": {
+    "parser": "babel-eslint"
+  },
+  "extends": [
+    "airbnb-base"
+  ],
+  "rules": {
+    "import/no-extraneous-dependencies": ["error", {"devDependencies": true}],
+    "object-curly-spacing": "off",
+    "comma-dangle": "off",
+    "function-paren-newline": "off",
+    "prefer-arrow-callback": "off",
+    "func-names": "off",
+    "no-param-reassign": "off",
+    "no-underscore-dangle": "off",
+    "no-await-in-loop": "off",
+    "no-restricted-syntax": "off"
+  }
+}

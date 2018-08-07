@@ -1,0 +1,53 @@
+@import (reference) "../../variables";
+.tab-game-content {
+  .local-sdp {
+    margin-bottom: 10px;
+    &-value {
+      padding: 10px;
+      border: 1px solid @tab-border-color;
+      background-color: @tab-color;
+      margin: 10px 0;
+      cursor: text;
+      color: @tab-border-color;
+      word-break: break-all;
+      font-size: .7em;
+    }
+  }
+  .remote-sdp {
+    margin-bottom: 10px;
+    &-value {
+      margin: 10px 0;
+      width: 100%;
+      max-width: 100%;
+      min-width: 100%;
+      box-sizing: border-box;
+      border: 1px solid @tab-border-color;
+      background-color: @tab-color;
+      color: @tab-border-color;
+      padding: 10px;
+    }
+  }
+
+  .handshake {
+    display: none;
+    &-submit {
+      width: 100%;
+      padding: 10px;
+      font-size: 1.1em;
+    }
+    &-buttons {
+      margin: 0 auto;
+      display: table;
+    }
+
+    &-receive-offer-container,
+    &-create-offer-container {
+      padding: 10px;
+      display: none;
+      &.selected {
+        display: block;
+      }
+    }
+  }
+}
+

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bomberman p2p</title>
+    <link type="text/css" rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="game-settings">
+    <div class="game-settings-tabs">
+        <div class="tab-game game-settings-tab selected">Current Game</div>
+        <div class="tab-players game-settings-tab">All Players</div>
+    </div>
+    <div class="game-settings-tabs-delimiter"></div>
+    <div class="game-settings-tabs-contents">
+        <div class="tab-game-content game-settings-tab-content selected">
+            <div class="handshake-buttons">
+                <input type="button" class="receive-offer-button" value="Receive offer">
+                or
+                <input type="button" class="create-offer-button" value="Create offer">
+            </div>
+            <div class="handshake-receive-offer-container">
+                <div class="remote-sdp">
+                    <div class="remote-sdp-label">Remote offer</div>
+                    <textarea class="remote-sdp-value" rows="5" name="ok" placeholder="Type remove sdp"></textarea>
+                </div>
+                <div class="local-sdp">
+                    <div class="local-sdp-label">My answer</div>
+                    <div class="local-sdp-value"></div>
+                </div>
+            </div>
+            <div class="handshake-create-offer-container">
+                <div class="local-sdp">
+                    <a class="local-sdp-label">My offer</a>
+                    <div class="local-sdp-value"></div>
+                </div>
+                <div class="remote-sdp">
+                    <div class="remote-sdp-label">Remote answer</div>
+                    <textarea class="remote-sdp-value" rows="5" name="ok" placeholder="Type remove sdp"></textarea>
+                </div>
+            </div>
+            <input type="button" class="handshake-submit" value="Accept">
+
+        </div>
+        <div class="tab-players-content game-settings-tab-content"></div>
+    </div>
+</div>
+<script type="application/javascript" src="js/BombermanUtils.js"></script>
+<script type="application/javascript" src="js/BombermanViewUtils.js"></script>
+<script type="application/javascript" src="js/BombermanGameView.js"></script>
+<script type="application/javascript" src="js/BombermanGame.js"></script>
+<script type="application/javascript" src="main.js"></script>
+</body>
+</html>
