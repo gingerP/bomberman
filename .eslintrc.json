@@ -6,11 +6,13 @@
   },
   "globals": {
     "require": true,
-    "BombermanGameView": true,
-    "BombermanGame": true,
-    "BombermanViewUtils": true,
-    "BombermanUtils": true,
-    "RTCPeerConnection": true
+    "BMGameView": true,
+    "BMGame": true,
+    "BMViewUtils": true,
+    "BMUtils": true,
+    "BMConnection": true,
+    "RTCPeerConnection": true,
+    "BMObservable": true
   },
   "parserOptions": {
     "parser": "babel-eslint"

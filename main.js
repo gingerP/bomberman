@@ -1,3 +1,3 @@
 (async () => {
-  const game = new BombermanGame();
+  const game = new BMGame();
 })();

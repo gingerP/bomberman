@@ -1,5 +1,6 @@
-class BombermanGameView {
+class BMGameView extends BMObservable {
   constructor() {
+    super();
     this.bindView();
     this.initEvents();
   }
@@ -7,6 +8,10 @@ class BombermanGameView {
   bindView() {
     this.remoteSdpView = document.querySelector('.remote-sdp-value');
     this.submitButton = document.querySelector('.handshake-submit');
+    this.connection = {
+      status: document.querySelector('.game-connection-status'),
+      content: document.querySelector('.game-connection-content')
+    };
     this.receiveOffer = {
       tab: document.querySelector('input.receive-offer-button'),
       content: document.querySelector('.handshake-receive-offer-container'),
@@ -19,6 +24,16 @@ class BombermanGameView {
       localSdp: document.querySelector('.handshake-create-offer-container .local-sdp-value'),
       remoteAnswerSdp: document.querySelector('.handshake-create-offer-container .remote-sdp-value')
     };
+  }
+
+  setConnected() {
+    this.connection.status.innerText = 'Connected';
+    BMViewUtils.addClass('connected', this.connection.status);
+  }
+
+  setDisconnected() {
+    this.connection.status.innerText = 'Disconnected';
+    BMViewUtils.removeClass('connected', this.connection.status);
   }
 
   setLocalSdpForCreateOffer(localSdp) {
@@ -42,38 +57,40 @@ class BombermanGameView {
   }
 
   onSubmit(callback) {
-    this.onSubmitHandler = callback;
+    this.on('submit-connection', callback);
   }
 
   onReceiveOffer(callback) {
-    this.onReceiveOfferHandler = callback;
+    this.on('receive-offer', callback);
   }
 
   onCreateOffer(callback) {
-    this.onCreateOfferHandler = callback;
+    this.on('create-offer', callback);
   }
 
   initEvents() {
     this.receiveOffer.tab.addEventListener('click', async () => {
-      BombermanViewUtils
-        .addClass(this.receiveOffer.content, 'selected')
-        .removeClass(this.createOffer.content, 'selected');
-      if (typeof this.onReceiveOfferHandler === 'function') {
-        await this.onReceiveOfferHandler();
-      }
+      BMViewUtils
+        .addClass('selected', this.receiveOffer.content)
+        .removeClass('selected', this.createOffer.content);
+      await this.emit('receive-offer');
     });
     this.createOffer.tab.addEventListener('click', async () => {
-      BombermanViewUtils
-        .addClass(this.createOffer.content, 'selected')
-        .removeClass(this.receiveOffer.content, 'selected');
-      if (typeof this.onCreateOfferHandler === 'function') {
-        await this.onCreateOfferHandler();
-      }
+      BMViewUtils
+        .addClass('selected', this.createOffer.content)
+        .removeClass('selected', this.receiveOffer.content);
+      await this.emit('create-offer');
     });
     this.submitButton.addEventListener('click', async () => {
-      if (typeof this.onSubmitHandler === 'function') {
-        await this.onSubmitHandler();
+      await this.emit('submit-connection');
+    });
+    this.connection.status.addEventListener('click', async (event) => {
+      if (BMViewUtils.isHidden(this.connection.content)) {
+        BMViewUtils.show(this.connection.content);
+      } else {
+        BMViewUtils.hide(this.connection.content);
       }
+      event.preventDefault();
     });
   }
 }

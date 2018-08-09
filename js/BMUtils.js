@@ -1,4 +1,4 @@
-class BombermanUtils {
+class BMUtils {
   static deferred() {
     return new function () {
       // update 062115 for typeof

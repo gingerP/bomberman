@@ -1,18 +1,13 @@
-class BombermanGame {
+class BMConnection extends BMObservable {
   constructor() {
+    super();
     this.remotes = [];
-    this.view = new BombermanGameView();
-    this.bindView();
-    this.offerAction = '';
-    this.offerActions = {
-      CREATE: 'create',
-      RECEIVE: 'receive'
-    };
+    this.listeners = {};
   }
 
   async initConnection() {
     this.localConnection = new RTCPeerConnection();
-    const defered = BombermanUtils.deferred();
+    const defered = BMUtils.deferred();
     this.iceCandidates = [];
     this.iceCandidatesPromise = defered.promise;
     this.localConnection.onicecandidate = (event) => {
@@ -23,24 +18,29 @@ class BombermanGame {
       this.iceCandidates.push(event.candidate);
     };
     this.chanel = this.localConnection.createDataChannel('bomberman-transport', {ordered: true});
-    // this.chanel.binaryType = 'arraybuffer';
-    this.chanel.onopen = () => {
-      if (this.chanel.readyState === 'open') {
-        this.chanel.send('Hello from XXX.');
-      }
+
+    this.chanel.onopen = async () => {
+      console.log('Connection established.');
+      await this.emit('connection-opened');
     };
-    this.chanel.onclose = () => {
+
+    this.chanel.onclose = async () => {
+      console.log('Connection closed.');
+      await this.emit('connection-closed');
     };
 
     this.localConnection.ondatachannel = (dataChannelEvent) => {
-      function onReceiveMessageCallback(event) {
-        console.info('onReceiveMessageCallback');
-        console.info(event.data);
-      }
-
       const receiveChannel = dataChannelEvent.channel;
       receiveChannel.binaryType = 'arraybuffer';
-      receiveChannel.onmessage = onReceiveMessageCallback;
+      receiveChannel.onmessage = async (event) => {
+        await this.emit('message-received', JSON.parse(event.data));
+      };
+    };
+    this.localConnection.oniceconnectionstatechange = async () => {
+      if (this.localConnection.iceConnectionState === 'disconnected') {
+        console.log('Connection closed.');
+        await this.emit('connection-closed');
+      }
     };
   }
 
@@ -48,22 +48,6 @@ class BombermanGame {
     const offer = await this.localConnection.createOffer();
     this.offer = offer;
     this.localConnection.setLocalDescription(offer);
-  }
-
-  bindView() {
-    this.view.onCreateOffer(async () => {
-      await this.createOffer();
-    });
-    this.view.onReceiveOffer(() => {
-      this.offerAction = this.offerActions.RECEIVE;
-    });
-    this.view.onSubmit(async () => {
-      if (this.offerAction === this.offerActions.CREATE) {
-        await this.submitOfferCreation();
-      } else if (this.offerAction === this.offerActions.RECEIVE) {
-        await this.submitOfferReceiving();
-      }
-    });
   }
 
   async createOffer() {
@@ -76,13 +60,11 @@ class BombermanGame {
       ice: this.iceCandidates,
       sdp: this.offer
     };
-    this.view.setLocalSdpForCreateOffer(btoa(JSON.stringify(body)));
-    this.offerAction = this.offerActions.CREATE;
+    return btoa(JSON.stringify(body));
   }
 
-  async submitOfferCreation() {
+  async submitOfferCreation(answerBase64) {
     try {
-      const answerBase64 = this.view.getRemoteAnswerSdpForCreateOffer();
       const remoteAnswer = JSON.parse(atob(answerBase64));
       this.remotes.push(remoteAnswer);
       this.localConnection.setRemoteDescription(remoteAnswer.sdp);
@@ -98,11 +80,10 @@ class BombermanGame {
     }
   }
 
-  async submitOfferReceiving() {
+  async submitOfferReceiving(offerBase64) {
     if (!this.localConnection) {
       await this.initConnection();
     }
-    const offerBase64 = this.view.getRemoteSdpForReceiveOffer();
     const remoteOffer = JSON.parse(atob(offerBase64));
     this.remotes.push(remoteOffer);
     this.localConnection.setRemoteDescription(remoteOffer.sdp);
@@ -122,6 +103,16 @@ class BombermanGame {
       ice: this.iceCandidates,
       sdp: localAnswer
     };
-    this.view.setLocalAnswerSdpForReceiveOffer(btoa(JSON.stringify(body)));
+    return btoa(JSON.stringify(body));
+  }
+
+  async send(message) {
+    if (this.chanel.readyState === 'open') {
+      try {
+        await this.chanel.send(JSON.stringify(message));
+      } catch (error) {
+        console.error(error);
+      }
+    }
   }
 }

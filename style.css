@@ -1,3 +1,70 @@
+.game-connection .local-sdp {
+  margin-bottom: 10px;
+}
+.game-connection .local-sdp-value {
+  padding: 10px;
+  border: 1px solid #BCC8CE;
+  background-color: #859AA4;
+  margin: 10px 0;
+  cursor: text;
+  color: #BCC8CE;
+  word-break: break-all;
+  font-size: 0.7em;
+}
+.game-connection .remote-sdp {
+  margin-bottom: 10px;
+}
+.game-connection .remote-sdp-value {
+  margin: 10px 0;
+  width: 100%;
+  max-width: 100%;
+  min-width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #BCC8CE;
+  background-color: #859AA4;
+  color: #BCC8CE;
+  padding: 10px;
+}
+.game-connection .handshake {
+  display: none;
+}
+.game-connection .handshake-submit {
+  width: 100%;
+  padding: 10px;
+  font-size: 1.1em;
+}
+.game-connection .handshake-buttons {
+  margin: 0 auto;
+  display: table;
+}
+.game-connection .handshake-receive-offer-container,
+.game-connection .handshake-create-offer-container {
+  padding: 10px;
+  display: none;
+}
+.game-connection .handshake-receive-offer-container.selected,
+.game-connection .handshake-create-offer-container.selected {
+  display: block;
+}
+.game-connection-status {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px;
+  display: block;
+  color: black;
+}
+.game-connection-status:after {
+  content: '';
+  width: 8px;
+  height: 8px;
+  position: absolute;
+  background: #f44336;
+  margin: 5px 10px;
+  border-radius: 5px;
+}
+.game-connection-status.connected:after {
+  background: #8bc34a;
+}
 #game-settings {
   width: 300px;
   height: 100%;
@@ -28,54 +95,9 @@
   border-bottom: 1px solid #859AA4;
   margin: 0 auto;
 }
-.tab-game-content .local-sdp {
-  margin-bottom: 10px;
-}
-.tab-game-content .local-sdp-value {
-  padding: 10px;
-  border: 1px solid #BCC8CE;
-  background-color: #859AA4;
-  margin: 10px 0;
-  cursor: text;
-  color: #BCC8CE;
-  word-break: break-all;
-  font-size: 0.7em;
-}
-.tab-game-content .remote-sdp {
-  margin-bottom: 10px;
-}
-.tab-game-content .remote-sdp-value {
-  margin: 10px 0;
-  width: 100%;
-  max-width: 100%;
-  min-width: 100%;
-  box-sizing: border-box;
-  border: 1px solid #BCC8CE;
-  background-color: #859AA4;
-  color: #BCC8CE;
-  padding: 10px;
-}
-.tab-game-content .handshake {
-  display: none;
-}
-.tab-game-content .handshake-submit {
-  width: 100%;
-  padding: 10px;
-  font-size: 1.1em;
-}
-.tab-game-content .handshake-buttons {
-  margin: 0 auto;
-  display: table;
-}
-.tab-game-content .handshake-receive-offer-container,
-.tab-game-content .handshake-create-offer-container {
-  padding: 10px;
-  display: none;
-}
-.tab-game-content .handshake-receive-offer-container.selected,
-.tab-game-content .handshake-create-offer-container.selected {
-  display: block;
-}
 body {
   margin: inherit;
+}
+.bm-hidden {
+  display: none;
 }
