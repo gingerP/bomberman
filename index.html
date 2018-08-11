@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Bomberman p2p</title>
     <link type="text/css" rel="stylesheet" href="style.css">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
 </head>
 <body>
 <div id="game-settings">
@@ -52,10 +53,15 @@
         <div class="tab-players-content game-settings-tab-content"></div>
     </div>
 </div>
+<div class="game-panel-container">
+    <canvas id="game-panel" width="1000" height="1000"></canvas>
+</div>
 <script type="application/javascript" src="js/BMObservable.js"></script>
+<script type="application/javascript" src="js/utils/BPGamePanelUtils.js"></script>
 <script type="application/javascript" src="js/BMUtils.js"></script>
 <script type="application/javascript" src="js/BMViewUtils.js"></script>
-<script type="application/javascript" src="js/BMGameView.js"></script>
+<script type="application/javascript" src="js/BMSettingsView.js"></script>
+<script type="application/javascript" src="js/BMGamePanelView.js"></script>
 <script type="application/javascript" src="js/BMConnection.js"></script>
 <script type="application/javascript" src="js/BMGame.js"></script>
 <script type="application/javascript" src="main.js"></script>

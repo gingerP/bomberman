@@ -6,13 +6,15 @@
   },
   "globals": {
     "require": true,
-    "BMGameView": true,
+    "BMSettingsView": true,
+    "BMGamePanelView": true,
     "BMGame": true,
     "BMViewUtils": true,
     "BMUtils": true,
     "BMConnection": true,
     "RTCPeerConnection": true,
-    "BMObservable": true
+    "BMObservable": true,
+    "BMGamePanelUtils": true
   },
   "parserOptions": {
     "parser": "babel-eslint"
@@ -30,6 +32,7 @@
     "no-param-reassign": "off",
     "no-underscore-dangle": "off",
     "no-await-in-loop": "off",
-    "no-restricted-syntax": "off"
+    "no-restricted-syntax": "off",
+    "no-plusplus": "off"
   }
 }

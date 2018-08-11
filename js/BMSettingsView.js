@@ -1,4 +1,4 @@
-class BMGameView extends BMObservable {
+class BMSettingsView extends BMObservable {
   constructor() {
     super();
     this.bindView();

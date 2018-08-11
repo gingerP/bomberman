@@ -66,10 +66,11 @@
   background: #8bc34a;
 }
 #game-settings {
+  float: left;
   width: 300px;
-  height: 100%;
+  height: 100vh;
   background-color: #607d8b;
-  position: fixed;
+  position: relative;
   font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
 }
 #game-settings .game-settings-tabs {
@@ -94,6 +95,20 @@
   width: 90%;
   border-bottom: 1px solid #859AA4;
   margin: 0 auto;
+}
+.game-panel-container {
+  width: calc(100% - 300px);
+  float: left;
+  position: relative;
+  height: 100vh;
+}
+#game-panel {
+  margin: auto;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
 }
 body {
   margin: inherit;
