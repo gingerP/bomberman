@@ -9,6 +9,7 @@
     "BMSettingsView": true,
     "BMGamePanelView": true,
     "BMGame": true,
+    "BMGamer": true,
     "BMViewUtils": true,
     "BMUtils": true,
     "BMConnection": true,
@@ -33,6 +34,7 @@
     "no-underscore-dangle": "off",
     "no-await-in-loop": "off",
     "no-restricted-syntax": "off",
-    "no-plusplus": "off"
+    "no-plusplus": "off",
+    "class-methods-use-this": "off"
   }
 }

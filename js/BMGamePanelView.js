@@ -59,6 +59,7 @@ class BMGamePanelView extends BMObservable {
       background: newImage('/images/background_01.png'),
       wall: newImage('/images/bricks_01.png'),
       destructible: newImage('/images/wood_01.png'),
+      gamer: newImage('/images/gamer_red.png')
     };
 
     return Promise.all(
@@ -81,5 +82,12 @@ class BMGamePanelView extends BMObservable {
     const pattern = this.context.createPattern(image, 'repeat');
     this.context.fillStyle = pattern;
     this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
+  }
+
+  async drawGamerState(state) {
+    const {position} = state;
+    const xPx = position.x * this.cellSize;
+    const yPx = position.y * this.cellSize;
+    this.context.drawImage(this.images.gamer, xPx, yPx);
   }
 }

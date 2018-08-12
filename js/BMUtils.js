@@ -30,4 +30,15 @@ class BMUtils {
       //Object.freeze(this);
     }();
   }
+
+  static async runInTimeGap(callback, timeGap) {
+    const startTime = Date.now();
+    await callback();
+    const processTime = Date.now() - startTime;
+    if (timeGap > processTime) {
+      return new Promise((resolve) => {
+        setTimeout(resolve, timeGap - processTime);
+      });
+    }
+  }
 }

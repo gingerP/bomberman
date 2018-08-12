@@ -1,7 +1,9 @@
 class BMGame {
   constructor(width = 10, height = 10) {
+    this.gamers = [];
     this.width = width;
     this.height = height;
+    this.isCycleRunning = false;
     this.isConnected = false;
     this.connection = new BMConnection();
     this.settingsView = new BMSettingsView();
@@ -19,6 +21,7 @@ class BMGame {
     await this.gamePanelView.init();
     this.map = BMGamePanelUtils.generateMap(this.width, this.height);
     await this.gamePanelView.drawMap(this.map);
+    this.gamers.push(new BMGamer(this));
   }
 
   bindToSettingsView() {
@@ -53,7 +56,21 @@ class BMGame {
     });
   }
 
-  generateGameMap(width = 10, height = 10) {
-
+  async runCycle() {
+    this.isCycleRunning = true;
+    while (this.isCycleRunning) {
+      await BMUtils.runInTimeGap(async () => {
+        const states = await Promise.all(this.gamers.map(gamer => gamer.updateTickState()));
+        await Promise.all(states.map(state => this.gamePanelView.drawGamerState(state)));
+      }, 100);
+    }
   }
+
+  getSize() {
+    return {
+      width: this.width,
+      height: this.height,
+    };
+  }
+
 }
