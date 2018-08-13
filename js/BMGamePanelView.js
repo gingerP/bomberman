@@ -37,10 +37,10 @@ class BMGamePanelView extends BMObservable {
       const row = mapParams[y];
       for (let x = 0; x < row.length; x++) {
         switch (row[x]) {
-          case BMGamePanelUtils.POINTS_TYPE_WALL:
+          case BMGameUtils.POINTS_TYPE_WALL:
             this.context.drawImage(this.images.wall, x * this.cellSize, y * this.cellSize);
             break;
-          case BMGamePanelUtils.POINTS_TYPE_DESTRUCTIBLE:
+          case BMGameUtils.POINTS_TYPE_DESTRUCTIBLE:
             this.context.drawImage(this.images.destructible, x * this.cellSize, y * this.cellSize);
             break;
           default:
@@ -86,8 +86,8 @@ class BMGamePanelView extends BMObservable {
 
   async drawGamerState(state) {
     const {position} = state;
-    const xPx = position.x * this.cellSize;
-    const yPx = position.y * this.cellSize;
+    const xPx = (position.x - 0.5) * this.cellSize;
+    const yPx = (position.y - 0.5) * this.cellSize;
     this.context.drawImage(this.images.gamer, xPx, yPx);
   }
 }

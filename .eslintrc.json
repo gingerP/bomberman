@@ -15,7 +15,7 @@
     "BMConnection": true,
     "RTCPeerConnection": true,
     "BMObservable": true,
-    "BMGamePanelUtils": true
+    "BMGameUtils": true
   },
   "parserOptions": {
     "parser": "babel-eslint"

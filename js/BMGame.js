@@ -1,5 +1,7 @@
+/** @class BMGame */
 class BMGame {
   constructor(width = 10, height = 10) {
+    this.borderWidth = 0.2;
     this.gamers = [];
     this.width = width;
     this.height = height;
@@ -19,7 +21,7 @@ class BMGame {
 
   async init() {
     await this.gamePanelView.init();
-    this.map = BMGamePanelUtils.generateMap(this.width, this.height);
+    this.map = BMGameUtils.generateMap(this.width, this.height);
     await this.gamePanelView.drawMap(this.map);
     this.gamers.push(new BMGamer(this));
   }
@@ -71,6 +73,14 @@ class BMGame {
       width: this.width,
       height: this.height,
     };
+  }
+
+  getMap() {
+    return this.map;
+  }
+
+  getBorderWidth() {
+    return this.borderWidth;
   }
 
 }

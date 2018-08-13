@@ -7,15 +7,16 @@ class BMGamer {
       BOTTOM: 40,
       SPACE: 32
     };
-    this.tickDistance = 0.3;
+    this.tickDistance = 0.2;
     this.keyboardKeysList = Object.values(this.keyboard);
     this.currentKeyboardKey = null;
     this.state = {
       position: {
-        x: 0,
-        y: 0
+        x: 0.5,
+        y: 0.5
       }
     };
+    /** @type BMGame */
     this.game = game;
     this.bindToKeyboard();
   }
@@ -26,48 +27,57 @@ class BMGamer {
 
   bindToKeyboard() {
     document.body.addEventListener('keydown', (event) => {
-      console.log(event.keyCode);
       if (this.keyboardKeysList.indexOf(event.keyCode) >= 0) {
         this.currentDirection = event.keyCode;
         return;
       }
       this.currentDirection = null;
     }, false);
-    document.body.addEventListener('keyup', () => {
-      this.currentDirection = null;
+    document.body.addEventListener('keyup', (event) => {
+      if (this.currentDirection === event.keyCode) {
+        this.currentDirection = null;
+      }
     }, false);
   }
 
   updatePosition() {
     const {width, height} = this.game.getSize();
     const pos = this.state.position;
+    let newX = pos.x;
+    let newY = pos.y;
     switch (this.currentDirection) {
       case this.keyboard.TOP:
-        pos.y -= this.tickDistance;
-        if (pos.y < 0) {
-          pos.y = 0;
+        newY -= this.tickDistance;
+        if (newY < 0) {
+          newY = 0;
         }
         break;
       case this.keyboard.RIGHT:
-        pos.x += this.tickDistance;
-        if (pos.x > width - 1) {
-          pos.x = width - 1;
+        newX += this.tickDistance;
+        if (newX > width) {
+          newX = width;
         }
         break;
       case this.keyboard.BOTTOM:
-        pos.y += this.tickDistance;
-        if (pos.y > height - 1) {
-          pos.y = height - 1;
+        newY += this.tickDistance;
+        if (newY > height) {
+          newY = height;
         }
         break;
       case this.keyboard.LEFT:
-        pos.x -= this.tickDistance;
-        if (pos.x < 0) {
-          pos.x = 0;
+        newX -= this.tickDistance;
+        if (newX < 0) {
+          newX = 0;
         }
         break;
       default:
         break;
+    }
+    const map = this.game.getMap();
+    const borderWidth = this.game.getBorderWidth();
+    if (BMGameUtils.canGamerGetUpAtMap(newX, newY, map, borderWidth)) {
+      pos.x = BMUtils.round1(newX);
+      pos.y = BMUtils.round1(newY);
     }
   }
 
