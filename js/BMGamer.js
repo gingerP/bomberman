@@ -1,15 +1,6 @@
 class BMGamer {
   constructor(game) {
-    this.keyboard = {
-      LEFT: 37,
-      RIGHT: 39,
-      TOP: 38,
-      BOTTOM: 40,
-      SPACE: 32
-    };
     this.tickDistance = 0.2;
-    this.keyboardKeysList = Object.values(this.keyboard);
-    this.currentKeyboardKey = null;
     this.state = {
       position: {
         x: 0.5,
@@ -18,26 +9,15 @@ class BMGamer {
     };
     /** @type BMGame */
     this.game = game;
-    this.bindToKeyboard();
+    this.view = new BMGamerView();
+  }
+
+  async init() {
+    await this.view.init();
   }
 
   updateNetworkState() {
 
-  }
-
-  bindToKeyboard() {
-    document.body.addEventListener('keydown', (event) => {
-      if (this.keyboardKeysList.indexOf(event.keyCode) >= 0) {
-        this.currentDirection = event.keyCode;
-        return;
-      }
-      this.currentDirection = null;
-    }, false);
-    document.body.addEventListener('keyup', (event) => {
-      if (this.currentDirection === event.keyCode) {
-        this.currentDirection = null;
-      }
-    }, false);
   }
 
   updatePosition() {
@@ -45,26 +25,28 @@ class BMGamer {
     const pos = this.state.position;
     let newX = pos.x;
     let newY = pos.y;
-    switch (this.currentDirection) {
-      case this.keyboard.TOP:
+    const {Directions} = BMGamePanelView;
+    const direction = this.game.gamePanelView.getCurrentDirection();
+    switch (direction) {
+      case Directions.TOP:
         newY -= this.tickDistance;
         if (newY < 0) {
           newY = 0;
         }
         break;
-      case this.keyboard.RIGHT:
+      case Directions.RIGHT:
         newX += this.tickDistance;
         if (newX > width) {
           newX = width;
         }
         break;
-      case this.keyboard.BOTTOM:
+      case Directions.BOTTOM:
         newY += this.tickDistance;
         if (newY > height) {
           newY = height;
         }
         break;
-      case this.keyboard.LEFT:
+      case Directions.LEFT:
         newX -= this.tickDistance;
         if (newX < 0) {
           newX = 0;
@@ -86,7 +68,7 @@ class BMGamer {
     return this.state;
   }
 
-  async getState() {
+  getState() {
     return this.state;
   }
 }

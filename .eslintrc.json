@@ -10,12 +10,14 @@
     "BMGamePanelView": true,
     "BMGame": true,
     "BMGamer": true,
+    "BMGamerView": true,
     "BMViewUtils": true,
     "BMUtils": true,
     "BMConnection": true,
     "RTCPeerConnection": true,
     "BMObservable": true,
-    "BMGameUtils": true
+    "BMGameUtils": true,
+    "BMGameViewUtils": true
   },
   "parserOptions": {
     "parser": "babel-eslint"

@@ -5,14 +5,26 @@ class BMGamePanelView extends BMObservable {
     this.cellSize = cellSize;
     this.width = width;
     this.height = height;
+    this.acceptableDirections = Object.values(BMGamePanelView.Directions);
+    this.currentDirection = null;
+    this.pressedDirections = [];
+    this.layers = [
+      'background',
+      'borders',
+      'gamers',
+      'animations'
+    ];
     this.bindView();
-    this.setSize(this.width, this.height);
+    this.bindKeyBoard();
+    this.setSize(this.width, this.height, this.canvas);
+    this.bufferCanvas = document.createElement('canvas');
+    this.buffer = this.bufferCanvas.getContext('2d');
+    this.setSize(this.width, this.height, this.bufferCanvas);
   }
 
   async init() {
     await this.loadResources();
-
-    this.drawBackground(this.images.background);
+    this.drawBackground();
   }
 
   bindView() {
@@ -24,29 +36,35 @@ class BMGamePanelView extends BMObservable {
     }
   }
 
-  setSize(width, height) {
-    this.width = width;
-    this.height = height;
-    this.canvas.setAttribute('width', `${this.width * this.cellSize}px`);
-    this.canvas.setAttribute('height', `${this.height * this.cellSize}px`);
+  bindKeyBoard() {
+    document.body.addEventListener('keydown', async (event) => {
+      if (!this.pressedDirections.includes(event.keyCode)) {
+        this.pressedDirections.push(event.keyCode);
+      }
+      if (this.acceptableDirections.includes(event.keyCode)) {
+        this.currentDirection = event.keyCode;
+        return;
+      }
+      this.currentDirection = null;
+    }, false);
+    document.body.addEventListener('keyup', async (event) => {
+      const index = this.pressedDirections.indexOf(event.keyCode);
+      if (index >= 0) {
+        this.pressedDirections.splice(index);
+      }
+      if (this.currentDirection === event.keyCode && this.pressedDirections.length === 1) {
+        [this.currentDirection] = this.pressedDirections;
+      } else if (this.currentDirection === event.keyCode) {
+        this.currentDirection = null;
+      }
+    }, false);
   }
 
-  async drawMap(mapParams) {
-    await this.drawBackground(this.images.background);
-    for (let y = 0; y < mapParams.length; y++) {
-      const row = mapParams[y];
-      for (let x = 0; x < row.length; x++) {
-        switch (row[x]) {
-          case BMGameUtils.POINTS_TYPE_WALL:
-            this.context.drawImage(this.images.wall, x * this.cellSize, y * this.cellSize);
-            break;
-          case BMGameUtils.POINTS_TYPE_DESTRUCTIBLE:
-            this.context.drawImage(this.images.destructible, x * this.cellSize, y * this.cellSize);
-            break;
-          default:
-        }
-      }
-    }
+  setSize(width, height, canvas) {
+    this.width = width;
+    this.height = height;
+    canvas.setAttribute('width', `${this.width * this.cellSize}px`);
+    canvas.setAttribute('height', `${this.height * this.cellSize}px`);
   }
 
   async loadResources() {
@@ -58,8 +76,7 @@ class BMGamePanelView extends BMObservable {
     this.images = {
       background: newImage('/images/background_01.png'),
       wall: newImage('/images/bricks_01.png'),
-      destructible: newImage('/images/wood_01.png'),
-      gamer: newImage('/images/gamer_red.png')
+      destructible: newImage('/images/wood_01.png')
     };
 
     return Promise.all(
@@ -78,16 +95,53 @@ class BMGamePanelView extends BMObservable {
     });
   }
 
-  drawBackground(image) {
-    const pattern = this.context.createPattern(image, 'repeat');
-    this.context.fillStyle = pattern;
-    this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
+  clearBuffer() {
+    this.buffer.clearRect(0, 0, this.width, this.height);
   }
 
-  async drawGamerState(state) {
-    const {position} = state;
-    const xPx = (position.x - 0.5) * this.cellSize;
-    const yPx = (position.y - 0.5) * this.cellSize;
-    this.context.drawImage(this.images.gamer, xPx, yPx);
+  drawBufferToCanvas() {
+    this.context.drawImage(this.bufferCanvas, 0, 0);
+  }
+
+  drawContextToBuffer(context, params) {
+    const {x, y} = params;
+    this.buffer.drawImage(context, x, y);
+  }
+
+  drawBackground(context = this.context) {
+    context.fillStyle = context.createPattern(this.images.background, 'repeat');
+    context.fillRect(0, 0, this.canvas.width, this.canvas.height);
+  }
+
+  drawMap(mapParams, context = this.context) {
+    this.drawBackground();
+    for (let y = 0; y < mapParams.length; y++) {
+      const row = mapParams[y];
+      for (let x = 0; x < row.length; x++) {
+        switch (row[x]) {
+          case BMGameUtils.POINTS_TYPE_WALL:
+            context.drawImage(this.images.wall, x * this.cellSize, y * this.cellSize);
+            break;
+          case BMGameUtils.POINTS_TYPE_DESTRUCTIBLE:
+            context.drawImage(this.images.destructible, x * this.cellSize, y * this.cellSize);
+            break;
+          default:
+        }
+      }
+    }
+  }
+
+  getCurrentDirection() {
+    return this.currentDirection;
+  }
+
+  static get Directions() {
+    return {
+      LEFT: 37,
+      RIGHT: 39,
+      TOP: 38,
+      BOTTOM: 40,
+      SPACE: 32
+    };
   }
 }

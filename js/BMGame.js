@@ -22,8 +22,10 @@ class BMGame {
   async init() {
     await this.gamePanelView.init();
     this.map = BMGameUtils.generateMap(this.width, this.height);
-    await this.gamePanelView.drawMap(this.map);
-    this.gamers.push(new BMGamer(this));
+    this.gamePanelView.drawMap(this.map);
+    const gamer = new BMGamer(this);
+    await gamer.init();
+    this.gamers.push(gamer);
   }
 
   bindToSettingsView() {
@@ -61,10 +63,18 @@ class BMGame {
   async runCycle() {
     this.isCycleRunning = true;
     while (this.isCycleRunning) {
-      await BMUtils.runInTimeGap(async () => {
-        const states = await Promise.all(this.gamers.map(gamer => gamer.updateTickState()));
-        await Promise.all(states.map(state => this.gamePanelView.drawGamerState(state)));
-      }, 100);
+      await BMUtils.runInTimeGap(() => {
+        requestAnimationFrame(async () => {
+          await Promise.all(this.gamers.map(gamer => gamer.updateTickState()));
+          this.gamePanelView.clearBuffer();
+          this.gamePanelView.drawBackground(this.gamePanelView.buffer);
+          this.gamePanelView.drawMap(this.map, this.gamePanelView.buffer);
+          for (const gamer of this.gamers) {
+            gamer.view.render(this.gamePanelView.buffer, gamer.getState());
+          }
+          this.gamePanelView.drawBufferToCanvas();
+        });
+      }, 40);
     }
   }
 
