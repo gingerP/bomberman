@@ -37,6 +37,7 @@
     "no-await-in-loop": "off",
     "no-restricted-syntax": "off",
     "no-plusplus": "off",
-    "class-methods-use-this": "off"
+    "class-methods-use-this": "off",
+    "max-len": ["error", { "code": 120 }]
   }
 }

@@ -102,6 +102,8 @@
   position: relative;
   height: 100vh;
 }
+#game-panel-map,
+#game-panel-background,
 #game-panel {
   margin: auto;
   position: absolute;

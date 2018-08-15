@@ -2,6 +2,7 @@ class BMGamePanelView extends BMObservable {
 
   constructor(cellSize = 50, width = 10, height = 10) {
     super();
+    this.mapRenderTimes = 0;
     this.cellSize = cellSize;
     this.width = width;
     this.height = height;
@@ -20,17 +21,22 @@ class BMGamePanelView extends BMObservable {
     this.bufferCanvas = document.createElement('canvas');
     this.buffer = this.bufferCanvas.getContext('2d');
     this.setSize(this.width, this.height, this.bufferCanvas);
+    this.setSize(this.width, this.height, this.mapCanvas);
+    this.setSize(this.width, this.height, this.bgCanvas);
   }
 
   async init() {
     await this.loadResources();
-    this.drawBackground();
   }
 
   bindView() {
+    this.mapCanvas = document.getElementById('game-panel-map');
+    this.bgCanvas = document.getElementById('game-panel-background');
     this.canvas = document.getElementById('game-panel');
     if (this.canvas.getContext) {
       this.context = this.canvas.getContext('2d');
+      this.bgContext = this.bgCanvas.getContext('2d');
+      this.mapContext = this.mapCanvas.getContext('2d');
     } else {
       throw new Error('Canvas not supported.');
     }
@@ -108,19 +114,21 @@ class BMGamePanelView extends BMObservable {
     this.buffer.drawImage(context, x, y);
   }
 
-  drawBackground(context = this.context) {
-    context.fillStyle = context.createPattern(this.images.background, 'repeat');
-    context.fillRect(0, 0, this.canvas.width, this.canvas.height);
+  drawBackground() {
+    this.bgContext.fillStyle = this.bgContext.createPattern(this.images.background, 'repeat');
+    this.bgContext.fillRect(0, 0, this.bgCanvas.width, this.bgCanvas.height);
   }
 
-  drawMap(mapParams, context = this.context) {
-    this.drawBackground();
+  drawMap(mapParams, context = this.mapContext, force = false) {
+    this.mapRenderTimes++;
     for (let y = 0; y < mapParams.length; y++) {
       const row = mapParams[y];
       for (let x = 0; x < row.length; x++) {
         switch (row[x]) {
           case BMGameUtils.POINTS_TYPE_WALL:
-            context.drawImage(this.images.wall, x * this.cellSize, y * this.cellSize);
+            if (this.mapRenderTimes === 1 || force) {
+              this.bgContext.drawImage(this.images.wall, x * this.cellSize, y * this.cellSize);
+            }
             break;
           case BMGameUtils.POINTS_TYPE_DESTRUCTIBLE:
             context.drawImage(this.images.destructible, x * this.cellSize, y * this.cellSize);

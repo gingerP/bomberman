@@ -22,6 +22,7 @@ class BMGame {
   async init() {
     await this.gamePanelView.init();
     this.map = BMGameUtils.generateMap(this.width, this.height);
+    this.gamePanelView.drawBackground();
     this.gamePanelView.drawMap(this.map);
     const gamer = new BMGamer(this);
     await gamer.init();
@@ -67,7 +68,6 @@ class BMGame {
         requestAnimationFrame(async () => {
           await Promise.all(this.gamers.map(gamer => gamer.updateTickState()));
           this.gamePanelView.clearBuffer();
-          this.gamePanelView.drawBackground(this.gamePanelView.buffer);
           this.gamePanelView.drawMap(this.map, this.gamePanelView.buffer);
           for (const gamer of this.gamers) {
             gamer.view.render(this.gamePanelView.buffer, gamer.getState());
