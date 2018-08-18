@@ -2,13 +2,21 @@ class BMGamePanelView extends BMObservable {
 
   constructor(cellSize = 50, width = 10, height = 10) {
     super();
+    this.animation = null;
     this.mapRenderTimes = 0;
     this.cellSize = cellSize;
     this.width = width;
     this.height = height;
-    this.acceptableDirections = Object.values(BMGamePanelView.Directions);
-    this.currentDirection = null;
-    this.pressedDirections = [];
+    this.movements = [
+      {code: 'left', keyboard: 37},
+      {code: 'top', keyboard: 38},
+      {code: 'right', keyboard: 39},
+      {code: 'bottom', keyboard: 40}
+    ];
+    this.acceptableKeyboardCodes = [37, 38, 39, 40];
+    this.movementKeyboardCodes = [37, 38, 39, 40];
+    this.currentKeybordCode = null;
+    this.pressedKeybordCodes = [];
     this.layers = [
       'background',
       'borders',
@@ -19,10 +27,14 @@ class BMGamePanelView extends BMObservable {
     this.bindKeyBoard();
     this.setSize(this.width, this.height, this.canvas);
     this.bufferCanvas = document.createElement('canvas');
-    this.buffer = this.bufferCanvas.getContext('2d');
+    this.bufferContext = this.bufferCanvas.getContext('2d');
+    this.fpsView = document.querySelector('.fps');
     this.setSize(this.width, this.height, this.bufferCanvas);
     this.setSize(this.width, this.height, this.mapCanvas);
     this.setSize(this.width, this.height, this.bgCanvas);
+    this.showFps = BMUtils.throttle((fps) => {
+      this.fpsView.innerText = `FPS ${fps}`;
+    }, 1000);
   }
 
   async init() {
@@ -44,24 +56,26 @@ class BMGamePanelView extends BMObservable {
 
   bindKeyBoard() {
     document.body.addEventListener('keydown', async (event) => {
-      if (!this.pressedDirections.includes(event.keyCode)) {
-        this.pressedDirections.push(event.keyCode);
-      }
-      if (this.acceptableDirections.includes(event.keyCode)) {
-        this.currentDirection = event.keyCode;
+      if (this.acceptableKeyboardCodes.includes(event.keyCode)) {
+        if (!this.pressedKeybordCodes.includes(event.keyCode)) {
+          this.pressedKeybordCodes.push(event.keyCode);
+        }
+        this.currentKeybordCode = event.keyCode;
         return;
       }
-      this.currentDirection = null;
+      this.currentKeybordCode = null;
     }, false);
     document.body.addEventListener('keyup', async (event) => {
-      const index = this.pressedDirections.indexOf(event.keyCode);
-      if (index >= 0) {
-        this.pressedDirections.splice(index);
-      }
-      if (this.currentDirection === event.keyCode && this.pressedDirections.length === 1) {
-        [this.currentDirection] = this.pressedDirections;
-      } else if (this.currentDirection === event.keyCode) {
-        this.currentDirection = null;
+      if (this.acceptableKeyboardCodes.includes(event.keyCode)) {
+        const index = this.pressedKeybordCodes.indexOf(event.keyCode);
+        if (index >= 0) {
+          this.pressedKeybordCodes.splice(index);
+        }
+        if (this.currentKeybordCode === event.keyCode && this.pressedKeybordCodes.length === 1) {
+          [this.currentKeybordCode] = this.pressedKeybordCodes;
+        } else if (this.currentKeybordCode === event.keyCode) {
+          this.currentKeybordCode = null;
+        }
       }
     }, false);
   }
@@ -101,8 +115,24 @@ class BMGamePanelView extends BMObservable {
     });
   }
 
-  clearBuffer() {
-    this.buffer.clearRect(0, 0, this.width, this.height);
+  drawTick(state) {
+    const animate = (time) => {
+      if (this.previousAnimateTime) {
+        this.showFps(Math.round(1000 / (time - this.previousAnimateTime)));
+      }
+      this.previousAnimateTime = time;
+      if (this.animation !== null) {
+        cancelAnimationFrame(this.animation);
+        this.animation = null;
+      }
+      for (const gamer of state.gamers) {
+        gamer.view.clearPreviousFrame(this.context);
+      }
+      for (const gamer of state.gamers) {
+        gamer.view.render(this.context, gamer.getState());
+      }
+    };
+    this.animation = requestAnimationFrame(animate);
   }
 
   drawBufferToCanvas() {
@@ -111,7 +141,7 @@ class BMGamePanelView extends BMObservable {
 
   drawContextToBuffer(context, params) {
     const {x, y} = params;
-    this.buffer.drawImage(context, x, y);
+    this.bufferContext.drawImage(context, x, y);
   }
 
   drawBackground() {
@@ -139,17 +169,43 @@ class BMGamePanelView extends BMObservable {
     }
   }
 
+  isMovementKeysPressed() {
+    return this.movementKeyboardCodes.includes(this.currentKeybordCode);
+  }
+
   getCurrentDirection() {
-    return this.currentDirection;
+    if (this.currentKeybordCode) {
+      const movement = this._getMovementByKeyboard(this.currentKeybordCode);
+      return movement ? movement.code : null;
+    }
+    return null;
+  }
+
+  _getMovementByKeyboard(keyboard) {
+    for (const movement of this.movements) {
+      if (movement.keyboard === keyboard) {
+        return movement;
+      }
+    }
+    return null;
+  }
+
+  _setMovementByKeyboard(keyboard) {
+    this.movement = null;
+    for (const movement of this.movements) {
+      if (movement.keyboard === keyboard) {
+        this.movement = movement;
+      }
+    }
+    return null;
   }
 
   static get Directions() {
     return {
-      LEFT: 37,
-      RIGHT: 39,
-      TOP: 38,
-      BOTTOM: 40,
-      SPACE: 32
+      LEFT: 'left',
+      RIGHT: 'right',
+      TOP: 'top',
+      BOTTOM: 'bottom'
     };
   }
 }

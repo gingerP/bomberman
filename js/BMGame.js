@@ -64,17 +64,16 @@ class BMGame {
   async runCycle() {
     this.isCycleRunning = true;
     while (this.isCycleRunning) {
-      await BMUtils.runInTimeGap(() => {
-        requestAnimationFrame(async () => {
-          await Promise.all(this.gamers.map(gamer => gamer.updateTickState()));
-          this.gamePanelView.clearBuffer();
-          this.gamePanelView.drawMap(this.map, this.gamePanelView.buffer);
-          for (const gamer of this.gamers) {
-            gamer.view.render(this.gamePanelView.buffer, gamer.getState());
-          }
-          this.gamePanelView.drawBufferToCanvas();
+      await BMUtils.runInTimeGap(async () => {
+        const direction = this.gamePanelView.getCurrentDirection();
+        const isMoving = this.gamePanelView.isMovementKeysPressed();
+        for (const gamer of this.gamers) {
+          gamer.updateTickState(direction, isMoving);
+        }
+        this.gamePanelView.drawTick({
+          gamers: this.gamers
         });
-      }, 40);
+      }, 30);
     }
   }
 

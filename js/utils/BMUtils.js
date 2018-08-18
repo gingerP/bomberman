@@ -45,4 +45,16 @@ class BMUtils {
   static round1(number) {
     return Math.round(number * 10) / 10;
   }
+
+  static throttle(callback, timeout) {
+    let params = null;
+    setInterval(() => {
+      if (params) {
+        callback.call(null, params);
+      }
+    }, timeout);
+    return function (...args) {
+      params = args;
+    };
+  }
 }

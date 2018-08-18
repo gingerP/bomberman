@@ -1,6 +1,8 @@
 class BMGamer {
   constructor(game) {
     this.tickDistance = 0.2;
+    this.width = 50;
+    this.height = 100;
     this.state = {
       position: {
         x: 0.5,
@@ -21,13 +23,15 @@ class BMGamer {
   }
 
   updatePosition() {
+    if (!this.state.isMoving) {
+      return;
+    }
     const {width, height} = this.game.getSize();
     const pos = this.state.position;
     let newX = pos.x;
     let newY = pos.y;
     const {Directions} = BMGamePanelView;
-    const direction = this.game.gamePanelView.getCurrentDirection();
-    switch (direction) {
+    switch (this.state.direction) {
       case Directions.TOP:
         newY -= this.tickDistance;
         if (newY < 0) {
@@ -63,7 +67,9 @@ class BMGamer {
     }
   }
 
-  async updateTickState() {
+  updateTickState(direction, isMoving) {
+    this.state.direction = direction || this.state.direction;
+    this.state.isMoving = isMoving;
     this.updatePosition();
     return this.state;
   }
