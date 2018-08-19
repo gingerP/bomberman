@@ -1,5 +1,6 @@
 class BMBomb {
   constructor(x, y) {
+    this.isRunning = false;
     this.x = x;
     this.y = y;
     this.view = new BMBombView(x, y);
@@ -20,7 +21,8 @@ class BMBomb {
   }
 
   run() {
-
+    this.isRunning = true;
+    this.view.runAnimation();
   }
 
   updateTickState() {

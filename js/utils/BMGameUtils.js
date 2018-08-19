@@ -16,7 +16,7 @@ class BMGameUtils {
           // do nothing, it already BMGamePanelUtils.POINTS_TYPE_FREE
         } else if (x % 2 === 1 && y % 2 === 1) {
           map[y][x] = BMMapPoints.WALL;
-        } else if (Math.round(Math.random() + 0.2)) {
+        } else if (false/*Math.round(Math.random() + 0.2)*/) {
           map[y][x] = BMMapPoints.DESTRUCTIBLE;
         }
       }

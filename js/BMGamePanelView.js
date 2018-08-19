@@ -83,7 +83,7 @@ class BMGamePanelView extends BMObservable {
 
         const pressedIndex = this.pressedKeybordCodes.indexOf(event.keyCode);
         if (pressedIndex >= 0) {
-          this.pressedKeybordCodes.splice(pressedIndex);
+          this.pressedKeybordCodes.splice(pressedIndex, 1);
         }
         if (this.currentKeybordCode === event.keyCode && this.pressedKeybordCodes.length === 1) {
           [this.currentKeybordCode] = this.pressedKeybordCodes;
@@ -94,7 +94,7 @@ class BMGamePanelView extends BMObservable {
         if (this.movementKeyboardCodes.includes(event.keyCode)) {
           const movementIndex = this.pressedMovementKeybordCodes.indexOf(event.keyCode);
           if (movementIndex >= 0) {
-            this.pressedMovementKeybordCodes.splice(movementIndex);
+            this.pressedMovementKeybordCodes.splice(movementIndex, 1);
           }
 
           const len = this.pressedMovementKeybordCodes.length;
@@ -159,15 +159,15 @@ class BMGamePanelView extends BMObservable {
       for (const bomb of state.bombs) {
         bomb.view.clearPreviousFrame(this.context);
       }
-      for (const bomb of state.bombs) {
-        bomb.view.render(this.context, bomb.getState());
-      }
-
       for (const gamer of state.gamers) {
         gamer.view.clearPreviousFrame(this.context);
       }
+
+      for (const bomb of state.bombs) {
+        bomb.view.render(this.context, bomb.getState(), time);
+      }
       for (const gamer of state.gamers) {
-        gamer.view.render(this.context, gamer.getState());
+        gamer.view.render(this.context, gamer.getState(), time);
       }
     };
     this.animation = requestAnimationFrame(animate);

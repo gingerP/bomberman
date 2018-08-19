@@ -86,6 +86,9 @@ class BMGamer {
     this.updatePosition();
     if (this.isLocal && this.state.isSpacePressed) {
       this.state.bomb = await this.dropBomb();
+      if (this.state.bomb) {
+        this.state.bomb.run();
+      }
     }
     return this.state;
   }

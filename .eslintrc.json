@@ -43,6 +43,7 @@
     "no-plusplus": "off",
     "class-methods-use-this": "off",
     "max-len": ["error", { "code": 120 }],
-    "padded-blocks": "off"
+    "padded-blocks": "off",
+    "object-curly-newline": "off"
   }
 }
