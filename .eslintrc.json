@@ -8,7 +8,8 @@
     "require": true,
     "BMSettingsView": true,
     "BMGamePanelView": true,
-    "BMGame": true,
+    "BMBomb": true,
+    "BMBombView": true,
     "BMGamer": true,
     "BMGamerView": true,
     "BMViewUtils": true,
@@ -17,7 +18,10 @@
     "RTCPeerConnection": true,
     "BMObservable": true,
     "BMGameUtils": true,
-    "BMGameViewUtils": true
+    "BMGameViewUtils": true,
+    "BMDirections": true,
+    "BMKeyboard": true,
+    "BMMapPoints": true
   },
   "parserOptions": {
     "parser": "babel-eslint"
@@ -38,6 +42,7 @@
     "no-restricted-syntax": "off",
     "no-plusplus": "off",
     "class-methods-use-this": "off",
-    "max-len": ["error", { "code": 120 }]
+    "max-len": ["error", { "code": 120 }],
+    "padded-blocks": "off"
   }
 }

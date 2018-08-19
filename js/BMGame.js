@@ -1,8 +1,10 @@
 /** @class BMGame */
 class BMGame {
   constructor(width = 10, height = 10) {
-    this.borderWidth = 0.2;
+    this.borderWidth = 0.0;
     this.gamers = [];
+    this.bombs = [];
+    this.map = [];
     this.width = width;
     this.height = height;
     this.isCycleRunning = false;
@@ -21,7 +23,7 @@ class BMGame {
 
   async init() {
     await this.gamePanelView.init();
-    this.map = BMGameUtils.generateMap(this.width, this.height);
+    this.map = BMGameUtils.generateMap(this.width, this.height, 1);
     this.gamePanelView.drawBackground();
     this.gamePanelView.drawMap(this.map);
     const gamer = new BMGamer(this);
@@ -67,11 +69,27 @@ class BMGame {
       await BMUtils.runInTimeGap(async () => {
         const direction = this.gamePanelView.getCurrentDirection();
         const isMoving = this.gamePanelView.isMovementKeysPressed();
-        for (const gamer of this.gamers) {
-          gamer.updateTickState(direction, isMoving);
+        const isSpacePressed = this.gamePanelView.isSpacePressed();
+
+        let index = this.bombs.length;
+        while (index--) {
+          const bomb = this.bombs[index];
+          bomb.updateTickState();
+          if (bomb.isFinished()) {
+            this.bombs.splice(index, 1);
+          }
         }
+
+        for (const gamer of this.gamers) {
+          const state = await gamer.updateTickState({direction, isMoving, isSpacePressed});
+          if (state.bomb) {
+            this.bombs.push(state.bomb);
+          }
+        }
+
         this.gamePanelView.drawTick({
-          gamers: this.gamers
+          gamers: this.gamers,
+          bombs: this.bombs
         });
       }, 30);
     }
@@ -88,8 +106,16 @@ class BMGame {
     return this.map;
   }
 
+  getBombs() {
+    return this.bombs;
+  }
+
   getBorderWidth() {
     return this.borderWidth;
+  }
+
+  getView() {
+    return this.gamePanelView;
   }
 
 }
