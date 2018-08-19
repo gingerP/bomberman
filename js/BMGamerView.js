@@ -15,7 +15,7 @@ class BMGamerView {
   }
 
   async init() {
-    this.image = await BMGameViewUtils.loadImage('/images/bomberman.png');
+    this.image = await BMGameViewUtils.loadImage('images/bomberman.png');
   }
 
   render(context, state, time) {

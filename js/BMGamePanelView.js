@@ -124,9 +124,9 @@ class BMGamePanelView extends BMObservable {
       return image;
     };
     this.images = {
-      background: newImage('/images/background_01.png'),
-      wall: newImage('/images/bricks_01.png'),
-      destructible: newImage('/images/wood_01.png')
+      background: newImage('images/background_01.png'),
+      wall: newImage('images/bricks_01.png'),
+      destructible: newImage('images/wood_01.png')
     };
 
     return Promise.all(

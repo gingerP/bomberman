@@ -6,7 +6,7 @@ class BMBombView {
   }
 
   async init() {
-    this.image = await BMGameViewUtils.loadImage('/images/bomb.png');
+    this.image = await BMGameViewUtils.loadImage('images/bomb.png');
   }
 
   clearPreviousFrame(context) {
