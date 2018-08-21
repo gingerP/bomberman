@@ -4,6 +4,13 @@ class BMBombView {
     this.startTime = null;
     this.bombImage = null;
     this.fireImage = null;
+    this.fireImageParts = {
+      top: [0, 0],
+      right: [50, 0],
+      bottom: [100, 0],
+      left: [150, 0],
+      center: [200, 0]
+    };
   }
 
   async init() {
@@ -15,12 +22,25 @@ class BMBombView {
 
   clearPreviousFrame(context) {
     if (this.previousState) {
-      const {position} = this.previousState;
+      const {x, y} = this.previousState.position;
+      const {top, right, bottom, left} = this.previousState.directionsForExplosion;
+      const topLeftX = x * 50 - (left ? 50 : 0);
+      const topLeftY = y * 50 - (top ? 50 : 0);
+      let width = 150;
+      if (!left && !right) {
+        width = 50;
+      } else if (!left && right || !right && left) {
+        width = 100;
+      }
+      let height = 150;
+      if (!top && !bottom) {
+        height = 50;
+      } else if (!top && bottom || !bottom && top) {
+        height = 100;
+      }
       context.clearRect(
-        position.x * 50,
-        position.y * 50,
-        50,
-        50
+        topLeftX, topLeftY,
+        width, height
       );
     }
   }
@@ -50,18 +70,53 @@ class BMBombView {
           aHeight
         );
       } else {
+        const {x, y} = this.previousState.position;
+        const {top, right, bottom, left} = this.previousState.directionsForExplosion;
+
         context.drawImage(
           this.fireImage,
-          0,
-          0,
-          50,
-          50,
-
-          position.x * 50 + aX,
-          position.y * 50 + aY,
-          aWidth,
-          aHeight
+          this.fireImageParts.center[0], 0,
+          50, 50,
+          x * 50, y * 50,
+          50, 50
         );
+
+        if (top) {
+          context.drawImage(
+            this.fireImage,
+            this.fireImageParts.top[0], 0,
+            50, 50,
+            x * 50, y * 50 - 50,
+            50, 50
+          );
+        }
+        if (right) {
+          context.drawImage(
+            this.fireImage,
+            this.fireImageParts.right[0], 0,
+            50, 50,
+            x * 50 + 50, y * 50,
+            50, 50
+          );
+        }
+        if (bottom) {
+          context.drawImage(
+            this.fireImage,
+            this.fireImageParts.bottom[0], 0,
+            50, 50,
+            x * 50, y * 50 + 50,
+            50, 50
+          );
+        }
+        if (left) {
+          context.drawImage(
+            this.fireImage,
+            this.fireImageParts.left[0], 0,
+            50, 50,
+            x * 50 - 50, y * 50,
+            50, 50
+          );
+        }
       }
     }
 

@@ -74,7 +74,7 @@ class BMGame {
         let index = this.bombs.length;
         while (index--) {
           const bomb = this.bombs[index];
-          bomb.updateTickState();
+          bomb.updateTickState(this);
           if (bomb.isFinished()) {
             this.bombs.splice(index, 1);
           }
