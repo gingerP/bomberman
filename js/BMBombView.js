@@ -1,12 +1,16 @@
 class BMBombView {
   constructor() {
-    this.isRunning = false;
     this.odd = false;
     this.startTime = null;
+    this.bombImage = null;
+    this.fireImage = null;
   }
 
   async init() {
-    this.image = await BMGameViewUtils.loadImage('images/bomb.png');
+    [this.bombImage, this.fireImage] = await Promise.all([
+      BMGameViewUtils.loadImage('images/bomb.png'),
+      BMGameViewUtils.loadImage('images/fire.png')
+    ]);
   }
 
   clearPreviousFrame(context) {
@@ -27,26 +31,43 @@ class BMBombView {
 
   render(context, state, time) {
     this.startTime = this.startTime || time;
-
     this.previousState = state;
-    this.odd = !this.odd;
-    const {position} = state;
-    const {aX, aY, aWidth, aHeight} = this.animationFunction(time);
-    context.drawImage(
-      this.image,
-      0,
-      0,
-      50,
-      50,
+    if (this.previousState.isRunning) {
+      if (!this.previousState.isExploded) {
+        this.odd = !this.odd;
+        const {position} = state;
+        const {aX, aY, aWidth, aHeight} = this.bombAnimationFunction(time);
+        context.drawImage(
+          this.bombImage,
+          0,
+          0,
+          50,
+          50,
 
-      position.x * 50 + aX,
-      position.y * 50 + aY,
-      aWidth,
-      aHeight
-    );
+          position.x * 50 + aX,
+          position.y * 50 + aY,
+          aWidth,
+          aHeight
+        );
+      } else {
+        context.drawImage(
+          this.fireImage,
+          0,
+          0,
+          50,
+          50,
+
+          position.x * 50 + aX,
+          position.y * 50 + aY,
+          aWidth,
+          aHeight
+        );
+      }
+    }
+
   }
 
-  animationFunction(time) {
+  bombAnimationFunction(time) {
     const dTime = time - this.startTime;
     const step = Math.floor(dTime / 100);
     const cycleStep = step % 10;

@@ -1,6 +1,7 @@
 class BMBomb {
   constructor(x, y) {
     this.isRunning = false;
+    this.isExploded = false;
     this.x = x;
     this.y = y;
     this.view = new BMBombView(x, y);
