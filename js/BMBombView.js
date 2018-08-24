@@ -21,105 +21,117 @@ class BMBombView {
   }
 
   clearPreviousFrame(context) {
-    if (this.previousState) {
-      const {x, y} = this.previousState.position;
-      const {top, right, bottom, left} = this.previousState.directionsForExplosion;
-      const topLeftX = x * 50 - (left ? 50 : 0);
-      const topLeftY = y * 50 - (top ? 50 : 0);
-      let width = 150;
-      if (!left && !right) {
-        width = 50;
-      } else if (!left && right || !right && left) {
-        width = 100;
+    const state = this.previousState;
+    if (state) {
+      if (state.status === BombStatuses.ACTIVATED) {
+        const {x, y} = state.position;
+        context.clearRect(
+          x * 50, y * 50,
+          50, 50
+        );
+      } else if (state.status === BombStatuses.EXPLOSION) {
+        const {x, y} = state.position;
+        const {top, right, bottom, left} = state.directionsForExplosion;
+        const topLeftX = x * 50 - (left ? 50 : 0);
+        const topLeftY = y * 50 - (top ? 50 : 0);
+        let width = 150;
+        if (!left && !right) {
+          width = 50;
+        } else if (!left && right || !right && left) {
+          width = 100;
+        }
+        let height = 150;
+        if (!top && !bottom) {
+          height = 50;
+        } else if (!top && bottom || !bottom && top) {
+          height = 100;
+        }
+        console.info(topLeftX, topLeftY,width, height);
+        context.clearRect(
+          topLeftX, topLeftY,
+          width, height
+        );
       }
-      let height = 150;
-      if (!top && !bottom) {
-        height = 50;
-      } else if (!top && bottom || !bottom && top) {
-        height = 100;
-      }
-      context.clearRect(
-        topLeftX, topLeftY,
-        width, height
-      );
     }
   }
 
   runAnimation() {
-    this.isRunning = true;
   }
 
   render(context, state, time) {
     this.startTime = this.startTime || time;
     this.previousState = state;
-    if (this.previousState.isRunning) {
-      if (!this.previousState.isExploded) {
-        this.odd = !this.odd;
-        const {position} = state;
-        const {aX, aY, aWidth, aHeight} = this.bombAnimationFunction(time);
-        context.drawImage(
-          this.bombImage,
-          0,
-          0,
-          50,
-          50,
+    if (state.status === BombStatuses.ACTIVATED) {
+      this.odd = !this.odd;
+      const {position} = state;
+      const {aX, aY, aWidth, aHeight} = this.bombAnimationFunction(time);
+      context.drawImage(
+        this.bombImage,
+        0,
+        0,
+        50,
+        50,
 
-          position.x * 50 + aX,
-          position.y * 50 + aY,
-          aWidth,
-          aHeight
-        );
-      } else {
-        const {x, y} = this.previousState.position;
-        const {top, right, bottom, left} = this.previousState.directionsForExplosion;
+        position.x * 50 + aX,
+        position.y * 50 + aY,
+        aWidth,
+        aHeight
+      );
+    } else if (state.status === BombStatuses.EXPLOSION) {
+      const {x, y} = state.position;
+      const {top, right, bottom, left} = state.directionsForExplosion;
 
+      context.drawImage(
+        this.fireImage,
+        this.fireImageParts.center[0], 0,
+        50, 50,
+        x * 50, y * 50,
+        50, 50
+      );
+
+      if (top) {
         context.drawImage(
           this.fireImage,
-          this.fireImageParts.center[0], 0,
+          this.fireImageParts.top[0], 0,
           50, 50,
-          x * 50, y * 50,
+          x * 50, y * 50 - 50,
           50, 50
         );
-
-        if (top) {
-          context.drawImage(
-            this.fireImage,
-            this.fireImageParts.top[0], 0,
-            50, 50,
-            x * 50, y * 50 - 50,
-            50, 50
-          );
-        }
-        if (right) {
-          context.drawImage(
-            this.fireImage,
-            this.fireImageParts.right[0], 0,
-            50, 50,
-            x * 50 + 50, y * 50,
-            50, 50
-          );
-        }
-        if (bottom) {
-          context.drawImage(
-            this.fireImage,
-            this.fireImageParts.bottom[0], 0,
-            50, 50,
-            x * 50, y * 50 + 50,
-            50, 50
-          );
-        }
-        if (left) {
-          context.drawImage(
-            this.fireImage,
-            this.fireImageParts.left[0], 0,
-            50, 50,
-            x * 50 - 50, y * 50,
-            50, 50
-          );
-        }
       }
+      if (right) {
+        context.drawImage(
+          this.fireImage,
+          this.fireImageParts.right[0], 0,
+          50, 50,
+          x * 50 + 50, y * 50,
+          50, 50
+        );
+      }
+      if (bottom) {
+        context.drawImage(
+          this.fireImage,
+          this.fireImageParts.bottom[0], 0,
+          50, 50,
+          x * 50, y * 50 + 50,
+          50, 50
+        );
+      }
+      if (left) {
+        context.drawImage(
+          this.fireImage,
+          this.fireImageParts.left[0], 0,
+          50, 50,
+          x * 50 - 50, y * 50,
+          50, 50
+        );
+      }
+    } else if (state.status === BombStatuses.PREPARE_TO_DESTROY) {
+      this.clearPreviousFrame(context);
     }
+  }
 
+  destroy(context) {
+    this.clearPreviousFrame(context);
   }
 
   bombAnimationFunction(time) {

@@ -16,3 +16,10 @@ const BMMapPoints = {
   WALL: 1,
   DESTRUCTIBLE: 2
 };
+const BombStatuses = {
+  NOT_ACTIVATED: 'not_activated',
+  ACTIVATED: 'activated',
+  EXPLOSION: 'explosion',
+  PREPARE_TO_DESTROY: 'prepare_to_destroy',
+  DESTROYED: 'destroyed'
+};

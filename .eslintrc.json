@@ -21,7 +21,8 @@
     "BMGameViewUtils": true,
     "BMDirections": true,
     "BMKeyboard": true,
-    "BMMapPoints": true
+    "BMMapPoints": true,
+    "BombStatuses": true
   },
   "parserOptions": {
     "parser": "babel-eslint"

@@ -2,11 +2,12 @@ class BMGamePanelView extends BMObservable {
 
   constructor(cellSize = 50, width = 10, height = 10) {
     super();
+    this.usingBuffer = true;
     this.animation = null;
     this.mapRenderTimes = 0;
     this.cellSize = cellSize;
-    this.width = width;
-    this.height = height;
+    this.width = width * cellSize;
+    this.height = height * cellSize;
     this.movements = [
       {code: 'left', keyboard: 37},
       {code: 'top', keyboard: 38},
@@ -38,7 +39,7 @@ class BMGamePanelView extends BMObservable {
     this.setSize(this.width, this.height, this.bgCanvas);
     this.showFps = BMUtils.throttle((fps) => {
       this.fpsView.innerText = `FPS ${fps}`;
-    }, 1000);
+    }, 100);
   }
 
   async init() {
@@ -46,6 +47,11 @@ class BMGamePanelView extends BMObservable {
   }
 
   bindView() {
+    const bufferCheckbox = document.getElementById('buffer');
+    bufferCheckbox.addEventListener('change', () => {
+      this.usingBuffer = bufferCheckbox.checked;
+    });
+
     this.mapCanvas = document.getElementById('game-panel-map');
     this.bgCanvas = document.getElementById('game-panel-background');
     this.canvas = document.getElementById('game-panel');
@@ -111,10 +117,8 @@ class BMGamePanelView extends BMObservable {
   }
 
   setSize(width, height, canvas) {
-    this.width = width;
-    this.height = height;
-    canvas.setAttribute('width', `${this.width * this.cellSize}px`);
-    canvas.setAttribute('height', `${this.height * this.cellSize}px`);
+    canvas.setAttribute('width', `${this.width}px`);
+    canvas.setAttribute('height', `${this.height}px`);
   }
 
   async loadResources() {
@@ -156,18 +160,33 @@ class BMGamePanelView extends BMObservable {
         this.animation = null;
       }
 
-      for (const bomb of state.bombs) {
-        bomb.view.clearPreviousFrame(this.context);
-      }
-      for (const gamer of state.gamers) {
-        gamer.view.clearPreviousFrame(this.context);
-      }
+      if (this.usingBuffer) {
+        this.bufferContext.clearRect(0, 0, this.width, this.height);
+        this.context.clearRect(0, 0, this.width, this.height);
 
-      for (const bomb of state.bombs) {
-        bomb.view.render(this.context, bomb.getState(), time);
-      }
-      for (const gamer of state.gamers) {
-        gamer.view.render(this.context, gamer.getState(), time);
+        for (const bomb of state.bombs) {
+          bomb.view.render(this.bufferContext, bomb.getState(), time);
+        }
+        for (const gamer of state.gamers) {
+          gamer.view.render(this.bufferContext, gamer.getState(), time);
+        }
+
+        this.drawBufferToCanvas();
+      } else {
+
+        for (const bomb of state.bombs) {
+          bomb.view.clearPreviousFrame(this.context);
+        }
+        for (const gamer of state.gamers) {
+          gamer.view.clearPreviousFrame(this.context);
+        }
+
+        for (const bomb of state.bombs) {
+          bomb.view.render(this.context, bomb.getState(), time);
+        }
+        for (const gamer of state.gamers) {
+          gamer.view.render(this.context, gamer.getState(), time);
+        }
       }
     };
     this.animation = requestAnimationFrame(animate);

@@ -1,12 +1,14 @@
 class BMGameUtils {
 
 
-  static generateMap(width = 10, height = 10, borderWidth = 0) {
+  static generateMaps(width = 10, height = 10, borderWidth = 0) {
     const map = [];
+    const explosionsMap = [];
     for (let x = 0; x < width; x++) {
       for (let y = 0; y < height; y++) {
         if (!map[y]) {
           map[y] = [];
+          explosionsMap[y] = [];
         }
         map[y][x] = BMMapPoints.FREE;
         if (borderWidth && ((x < borderWidth || x >= width - borderWidth)
@@ -19,9 +21,10 @@ class BMGameUtils {
         } else if (false/*Math.round(Math.random() + 0.2)*/) {
           map[y][x] = BMMapPoints.DESTRUCTIBLE;
         }
+        explosionsMap[y][x] = 0;
       }
     }
-    return map;
+    return {map, explosionsMap};
   }
 
   static isStartingAreaForGamer(x, y, width = 10, height = 10, borderWidth = 0) {
@@ -76,5 +79,9 @@ class BMGameUtils {
       }
     }
     return true;
+  }
+
+  static canExplodeFromExternalBomb(x, y, explosionsMap) {
+    return explosionsMap[y] && explosionsMap[y][x];
   }
 }

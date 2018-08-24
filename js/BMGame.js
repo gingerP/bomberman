@@ -5,6 +5,7 @@ class BMGame {
     this.gamers = [];
     this.bombs = [];
     this.map = [];
+    this.explosionsMap = [];
     this.width = width;
     this.height = height;
     this.isCycleRunning = false;
@@ -23,7 +24,9 @@ class BMGame {
 
   async init() {
     await this.gamePanelView.init();
-    this.map = BMGameUtils.generateMap(this.width, this.height, 1);
+    const maps = BMGameUtils.generateMaps(this.width, this.height, 1);
+    this.map = maps.map;
+    this.explosionsMap = maps.explosionsMap;
     this.gamePanelView.drawBackground();
     this.gamePanelView.drawMap(this.map);
     const gamer = new BMGamer(this);
@@ -74,8 +77,10 @@ class BMGame {
         let index = this.bombs.length;
         while (index--) {
           const bomb = this.bombs[index];
-          bomb.updateTickState(this);
-          if (bomb.isFinished()) {
+          const state = bomb.updateTickState(this);
+          const {x, y} = bomb.getPosition();
+          this.updateExplosionMapFromBombDirections(x, y, state.directionsForExplosion);
+          if (bomb.toBeDestroyed()) {
             this.bombs.splice(index, 1);
           }
         }
@@ -102,6 +107,10 @@ class BMGame {
     };
   }
 
+  getExplosionsMap() {
+    return this.explosionsMap;
+  }
+
   getMap() {
     return this.map;
   }
@@ -116,6 +125,14 @@ class BMGame {
 
   getView() {
     return this.gamePanelView;
+  }
+
+  updateExplosionMapFromBombDirections(x, y, directions) {
+    const {top, right, bottom, left} = directions;
+    this.explosionsMap[y - 1][x] = this.explosionsMap[y - 1][x] || Boolean(top);
+    this.explosionsMap[y][x + 1] = this.explosionsMap[y][x + 1] || Boolean(right);
+    this.explosionsMap[y + 1][x] = this.explosionsMap[y + 1][x] || Boolean(bottom);
+    this.explosionsMap[y][x - 1] = this.explosionsMap[y][x - 1] || Boolean(left);
   }
 
 }
