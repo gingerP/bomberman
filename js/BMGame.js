@@ -78,10 +78,14 @@ class BMGame {
         while (index--) {
           const bomb = this.bombs[index];
           const state = bomb.updateTickState(this);
-          const {x, y} = bomb.getPosition();
-          this.updateExplosionMapFromBombDirections(x, y, state.directionsForExplosion);
+          if (state.justExploded) {
+            const {x, y} = bomb.getPosition();
+            this.increaseExplosionMapFromBombDirections(x, y, state.directionsForExplosion);
+          }
           if (bomb.toBeDestroyed()) {
             this.bombs.splice(index, 1);
+            const {x, y} = bomb.getPosition();
+            this.decreaseExplosionMapFromBombDirections(x, y, state.directionsForExplosion);
           }
         }
 
@@ -127,12 +131,20 @@ class BMGame {
     return this.gamePanelView;
   }
 
-  updateExplosionMapFromBombDirections(x, y, directions) {
+  increaseExplosionMapFromBombDirections(x, y, directions) {
     const {top, right, bottom, left} = directions;
-    this.explosionsMap[y - 1][x] = this.explosionsMap[y - 1][x] || Boolean(top);
-    this.explosionsMap[y][x + 1] = this.explosionsMap[y][x + 1] || Boolean(right);
-    this.explosionsMap[y + 1][x] = this.explosionsMap[y + 1][x] || Boolean(bottom);
-    this.explosionsMap[y][x - 1] = this.explosionsMap[y][x - 1] || Boolean(left);
+    this.explosionsMap[y - 1][x] += Boolean(top);
+    this.explosionsMap[y][x + 1] += Boolean(right);
+    this.explosionsMap[y + 1][x] += Boolean(bottom);
+    this.explosionsMap[y][x - 1] += Boolean(left);
+  }
+
+  decreaseExplosionMapFromBombDirections(x, y, directions) {
+    const {top, right, bottom, left} = directions;
+    this.explosionsMap[y - 1][x] -= Boolean(top);
+    this.explosionsMap[y][x + 1] -= Boolean(right);
+    this.explosionsMap[y + 1][x] -= Boolean(bottom);
+    this.explosionsMap[y][x - 1] -= Boolean(left);
   }
 
 }

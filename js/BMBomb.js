@@ -47,6 +47,7 @@ class BMBomb {
   updateTickState(game) {
     const now = Date.now();
     const {state} = this;
+    const wasExploded = state.status === BombStatuses.EXPLOSION;
     const timeOfExplosionCame = now - this.startTime >= this.preExplosionTime;
     const timeOfExplosionNotExpire = this.explosionStartTime
       && now - this.explosionStartTime < this.durationOfExplosion || !this.explosionStartTime;
@@ -81,6 +82,7 @@ class BMBomb {
       default:
         break;
     }
+    this.state.justExploded = !wasExploded && this.state.status === BombStatuses.EXPLOSION;
     return this.state;
   }
 
