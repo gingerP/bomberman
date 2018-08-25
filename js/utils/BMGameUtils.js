@@ -82,6 +82,6 @@ class BMGameUtils {
   }
 
   static canExplodeFromExternalBomb(x, y, explosionsMap) {
-    return explosionsMap[y] && explosionsMap[y][x];
+    return Boolean(explosionsMap[y] && explosionsMap[y][x]);
   }
 }

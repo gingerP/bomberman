@@ -83,11 +83,18 @@ class BMGamer {
     this.state.direction = direction || this.state.direction;
     this.state.isMoving = isMoving;
     this.state.isSpacePressed = isSpacePressed;
-    this.updatePosition();
-    if (this.isLocal && this.state.isSpacePressed) {
-      this.state.bomb = await this.dropBomb();
-      if (this.state.bomb) {
-        this.state.bomb.run();
+
+    const explosions = this.game.getExplosionsMap();
+    const {x, y} = this.state.position;
+    if (BMGameUtils.canExplodeFromExternalBomb(Math.floor(x), Math.floor(y), explosions)) {
+      this.state.isExploded = true;
+    } else {
+      this.updatePosition();
+      if (this.isLocal && this.state.isSpacePressed) {
+        this.state.bomb = await this.dropBomb();
+        if (this.state.bomb) {
+          this.state.bomb.run();
+        }
       }
     }
     return this.state;

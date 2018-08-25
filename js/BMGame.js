@@ -133,6 +133,7 @@ class BMGame {
 
   increaseExplosionMapFromBombDirections(x, y, directions) {
     const {top, right, bottom, left} = directions;
+    this.explosionsMap[y][x]++;
     this.explosionsMap[y - 1][x] += Boolean(top);
     this.explosionsMap[y][x + 1] += Boolean(right);
     this.explosionsMap[y + 1][x] += Boolean(bottom);
@@ -141,6 +142,7 @@ class BMGame {
 
   decreaseExplosionMapFromBombDirections(x, y, directions) {
     const {top, right, bottom, left} = directions;
+    this.explosionsMap[y][x]--;
     this.explosionsMap[y - 1][x] -= Boolean(top);
     this.explosionsMap[y][x + 1] -= Boolean(right);
     this.explosionsMap[y + 1][x] -= Boolean(bottom);

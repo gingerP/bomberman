@@ -16,25 +16,36 @@ class BMGamerView {
 
   async init() {
     this.image = await BMGameViewUtils.loadImage('images/bomberman.png');
+    this.imageAsh = await BMGameViewUtils.loadImage('images/ash.png');
   }
 
   render(context, state, time) {
     const {direction, position, isMoving} = state;
-    const previousDirection = this.previousState ? this.previousState.direction : BMDirections.BOTTOM;
     this.previousState = JSON.parse(JSON.stringify(state));
-    const sprite = this.updateSpriteImageParams(direction, previousDirection, isMoving);
-    context.drawImage(
-      this.image,
-      sprite.x,
-      sprite.y,
-      sprite.width,
-      sprite.height,
+    if (state.isExploded) {
+      context.drawImage(
+        this.imageAsh,
+        (position.x - 0.5) * this.cellSize,
+        (position.y - 0.8) * this.cellSize + 15,
+        50,
+        50
+      );
+    } else {
+      const previousDirection = this.previousState ? this.previousState.direction : BMDirections.BOTTOM;
+      const sprite = this.updateSpriteImageParams(direction, previousDirection, isMoving);
+      context.drawImage(
+        this.image,
+        sprite.x,
+        sprite.y,
+        sprite.width,
+        sprite.height,
 
-      (position.x - 0.5) * this.cellSize,
-      (position.y - 0.8) * this.cellSize - this.cellSize,
-      this.width,
-      this.height
-    );
+        (position.x - 0.5) * this.cellSize,
+        (position.y - 0.8) * this.cellSize - this.cellSize,
+        this.width,
+        this.height
+      );
+    }
   }
 
   clearPreviousFrame(context) {
