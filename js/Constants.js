@@ -12,14 +12,20 @@ const BMKeyboard = {
   BOTTOM: 40
 };
 const BMMapPoints = {
-  FREE: 0,
-  WALL: 1,
-  DESTRUCTIBLE: 2
+  FREE: 'free',
+  WALL: 'wall',
+  DESTRUCTIBLE: 'destructible'
 };
 const BombStatuses = {
   NOT_ACTIVATED: 'not_activated',
   ACTIVATED: 'activated',
   EXPLOSION: 'explosion',
   PREPARE_TO_DESTROY: 'prepare_to_destroy',
+  DESTROYED: 'destroyed'
+};
+const GamerStatuses = {
+  NOT_ACTIVATED: 'not_activated',
+  ACTIVATED: 'activated',
+  EXPLODED: 'exploded',
   DESTROYED: 'destroyed'
 };

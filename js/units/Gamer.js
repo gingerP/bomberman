@@ -1,11 +1,14 @@
 class BMGamer {
   constructor(game, params = {isLocal: true}) {
+    this.explosionDuration = 3000;
+    this.explosionStartTime = null;
     this.isLocal = params.isLocal;
     this.connection = params.connection;
     this.tickDistance = 0.2;
     this.width = 50;
     this.height = 100;
     this.state = {
+      status: GamerStatuses.ACTIVATED,
       position: {
         x: 1.5,
         y: 1.5
@@ -86,8 +89,13 @@ class BMGamer {
 
     const explosions = this.game.getExplosionsMap();
     const {x, y} = this.state.position;
-    if (BMGameUtils.canExplodeFromExternalBomb(Math.floor(x), Math.floor(y), explosions)) {
-      this.state.isExploded = true;
+    if (this.state.status === GamerStatuses.EXPLODED) {
+      if (Date.now() - this.explosionStartTime >= this.explosionDuration) {
+        this.state.status = GamerStatuses.DESTROYED;
+      }
+    } else if (BMGameUtils.canExplodeFromExternalBomb(Math.floor(x), Math.floor(y), explosions)) {
+      this.state.status = GamerStatuses.EXPLODED;
+      this.explosionStartTime = Date.now();
     } else {
       this.updatePosition();
       if (this.isLocal && this.state.isSpacePressed) {
@@ -102,5 +110,9 @@ class BMGamer {
 
   getState() {
     return this.state;
+  }
+
+  toBeDestroyed() {
+    return this.state.status === GamerStatuses.DESTROYED;
   }
 }

@@ -1,23 +1,19 @@
 class BMBomb {
-  constructor(x, y) {
+  constructor(x, y, range = 2) {
     this.destroyed = false;
+    this.range = range;
     this.preExplosionTime = 3000;
     this.durationOfExplosion = 3000;
     this.explosionStartTime = null;
     this.startTime = null;
     this.expired = false;
-    this.x = x;
-    this.y = y;
     this.view = new BMBombView(x, y);
     this.state = {
       status: BombStatuses.NOT_ACTIVATED,
-      directionsForExplosion: {
-        top: 0, right: 0, bottom: 0, left: 0
-      },
-      position: {
-        x: this.x,
-        y: this.y
-      }
+      explosions: [],
+      explosionsDelta: [],
+      explosionsView: [],
+      position: {x, y}
     };
   }
 
@@ -51,11 +47,12 @@ class BMBomb {
     const timeOfExplosionCame = now - this.startTime >= this.preExplosionTime;
     const timeOfExplosionNotExpire = this.explosionStartTime
       && now - this.explosionStartTime < this.durationOfExplosion || !this.explosionStartTime;
+    const {x, y} = this.state.position;
 
     if (state.status === BombStatuses.PREPARE_TO_DESTROY) {
       state.status = BombStatuses.DESTROYED;
     } else if (state.status === BombStatuses.ACTIVATED
-      && BMGameUtils.canExplodeFromExternalBomb(this.x, this.y, game.getExplosionsMap())
+      && BMGameUtils.canExplodeFromExternalBomb(x, y, game.getExplosionsMap())
       || (state.status === BombStatuses.EXPLOSION || timeOfExplosionCame) && timeOfExplosionNotExpire) {
       state.status = BombStatuses.EXPLOSION;
     } else if (!timeOfExplosionNotExpire) {
@@ -68,15 +65,10 @@ class BMBomb {
       case BombStatuses.ACTIVATED:
         break;
       case BombStatuses.EXPLOSION: {
-        const map = game.getMap();
         this.explosionStartTime = this.explosionStartTime || now;
-        const {x, y} = this.state.position;
-        const directions = this.state.directionsForExplosion;
-        const points = [BMMapPoints.FREE, BMMapPoints.DESTRUCTIBLE];
-        directions.top = y > 0 && points.includes(map[y - 1][x]) ? 1 : 0;
-        directions.right = x < map[y].length - 1 && points.includes(map[y][x + 1]) ? 1 : 0;
-        directions.bottom = y < map.length - 1 && points.includes(map[y + 1][x]) ? 1 : 0;
-        directions.left = x > 0 && points.includes(map[y][x - 1]) ? 1 : 0;
+        const calculations = this.calculateExplosion(game);
+        state.explosions = calculations.explosions;
+        state.explosionsDelta = calculations.explosionsDelta;
         break;
       }
       default:
@@ -86,8 +78,45 @@ class BMBomb {
     return this.state;
   }
 
-  _canExplodeFromExternalBomb(game) {
-
+  calculateExplosion(game) {
+    const map = game.getMap();
+    const {x, y} = this.state.position;
+    const shifts = [[-1, 0], [0, 1], [1, 0], [0, -1]];
+    const explosions = [[y, x]];
+    for (const shift of shifts) {
+      let step = 1;
+      while (step <= this.range) {
+        const stepX = x + shift[1] * step;
+        const stepY = y + shift[0] * step;
+        const cell = map[stepY] && map[stepY][stepX];
+        if (cell === BMMapPoints.FREE) {
+          explosions.push([stepY, stepX, 1]);
+        } else if (cell === BMMapPoints.WALL || cell instanceof Destructible) {
+          explosions.push([stepY, stepX, 0]);
+          break;
+        }
+        step++;
+      }
+    }
+    const oldExplosions = this.state.explosions;
+    let newIndex = explosions.length;
+    const explosionsDelta = [];
+    while (newIndex--) {
+      let oldIndex = oldExplosions.length;
+      const newExplosion = explosions[newIndex];
+      let exists = false;
+      while (oldIndex--) {
+        const oldExplosion = oldExplosions[oldIndex];
+        if (oldExplosion[0] === newExplosion[0] && oldExplosion[1] === newExplosion[1]) {
+          exists = true;
+          break;
+        }
+      }
+      if (!exists) {
+        explosionsDelta.push(newExplosion);
+      }
+    }
+    return {explosions, explosionsDelta};
   }
 
   toBeDestroyed() {
@@ -95,9 +124,6 @@ class BMBomb {
   }
 
   getPosition() {
-    return {
-      x: this.x,
-      y: this.y
-    };
+    return this.state.position;
   }
 }

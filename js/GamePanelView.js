@@ -49,7 +49,7 @@ class BMGamePanelView extends BMObservable {
   bindView() {
     const bufferCheckbox = document.getElementById('buffer');
     bufferCheckbox.addEventListener('change', () => {
-      this.usingBuffer = bufferCheckbox.checked;
+      //this.usingBuffer = bufferCheckbox.checked;
     });
 
     this.mapCanvas = document.getElementById('game-panel-map');
@@ -122,31 +122,14 @@ class BMGamePanelView extends BMObservable {
   }
 
   async loadResources() {
-    const newImage = (path) => {
-      const image = new Image();
-      image.src = path;
-      return image;
-    };
     this.images = {
-      background: newImage('images/background_01.png'),
-      wall: newImage('images/bricks_01.png'),
-      destructible: newImage('images/wood_01.png')
+      wall: null,
+      background: null
     };
-
-    return Promise.all(
-      [
-        BMGamePanelView.loadResource(this.images.background),
-        BMGamePanelView.loadResource(this.images.destructible),
-        BMGamePanelView.loadResource(this.images.wall)
-      ]
-    );
-  }
-
-  static async loadResource(image) {
-    return new Promise((resolve, reject) => {
-      image.addEventListener('load', resolve, false);
-      image.addEventListener('error', reject, false);
-    });
+    [this.images.background, this.images.wall] = await Promise.all([
+      BMGameViewUtils.loadImage('images/background_01.png'),
+      BMGameViewUtils.loadImage('images/bricks_01.png')
+    ]);
   }
 
   drawTick(state) {
@@ -164,6 +147,9 @@ class BMGamePanelView extends BMObservable {
         this.bufferContext.clearRect(0, 0, this.width, this.height);
         this.context.clearRect(0, 0, this.width, this.height);
 
+        for (const destruct of state.destructible) {
+          destruct.view.render(this.bufferContext, destruct.getState(), time);
+        }
         for (const bomb of state.bombs) {
           bomb.view.render(this.bufferContext, bomb.getState(), time);
         }
@@ -216,9 +202,6 @@ class BMGamePanelView extends BMObservable {
             if (this.mapRenderTimes === 1 || force) {
               this.bgContext.drawImage(this.images.wall, x * this.cellSize, y * this.cellSize);
             }
-            break;
-          case BMMapPoints.DESTRUCTIBLE:
-            context.drawImage(this.images.destructible, x * this.cellSize, y * this.cellSize);
             break;
           default:
         }

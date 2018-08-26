@@ -1,30 +1,34 @@
 class BMGameUtils {
 
-
-  static generateMaps(width = 10, height = 10, borderWidth = 0) {
+  static async generateMaps(width = 10, height = 10, borderWidth = 0) {
     const map = [];
     const explosionsMap = [];
+    const destructible = [];
     for (let x = 0; x < width; x++) {
       for (let y = 0; y < height; y++) {
         if (!map[y]) {
           map[y] = [];
           explosionsMap[y] = [];
         }
-        map[y][x] = BMMapPoints.FREE;
+        const row = map[y];
+        row[x] = BMMapPoints.FREE;
         if (borderWidth && ((x < borderWidth || x >= width - borderWidth)
           || (y < borderWidth || y >= height - borderWidth))) {
-          map[y][x] = BMMapPoints.WALL;
+          row[x] = BMMapPoints.WALL;
         } else if (BMGameUtils.isStartingAreaForGamer(x, y, width, height, borderWidth)) {
           // do nothing, it already BMGamePanelUtils.POINTS_TYPE_FREE
         } else if (x % 2 === 1 && y % 2 === 1) {
-          map[y][x] = BMMapPoints.WALL;
-        } else if (false/*Math.round(Math.random() + 0.2)*/) {
-          map[y][x] = BMMapPoints.DESTRUCTIBLE;
+          row[x] = BMMapPoints.WALL;
+        } else if (Math.round(Math.random() + 0.2)) {
+          const destruct = new Destructible(x, y);
+          await destruct.init();
+          row[x] = destruct;
+          destructible.push(destruct);
         }
         explosionsMap[y][x] = 0;
       }
     }
-    return {map, explosionsMap};
+    return {map, explosionsMap, destructible};
   }
 
   static isStartingAreaForGamer(x, y, width = 10, height = 10, borderWidth = 0) {

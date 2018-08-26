@@ -22,7 +22,10 @@
     "BMDirections": true,
     "BMKeyboard": true,
     "BMMapPoints": true,
-    "BombStatuses": true
+    "BombStatuses": true,
+    "GamerStatuses": true,
+    "Destructible": true,
+    "DestructibleView": true
   },
   "parserOptions": {
     "parser": "babel-eslint"
@@ -46,6 +49,7 @@
     "max-len": ["error", { "code": 120 }],
     "padded-blocks": "off",
     "object-curly-newline": "off",
-    "no-mixed-operators": "off"
+    "no-mixed-operators": "off",
+    "no-prototype-builtins": "off"
   }
 }

@@ -21,38 +21,7 @@ class BMBombView {
   }
 
   clearPreviousFrame(context) {
-    const state = this.previousState;
-    if (state) {
-      if (state.status === BombStatuses.ACTIVATED) {
-        const {x, y} = state.position;
-        context.clearRect(
-          x * 50, y * 50,
-          50, 50
-        );
-      } else if (state.status === BombStatuses.EXPLOSION) {
-        const {x, y} = state.position;
-        const {top, right, bottom, left} = state.directionsForExplosion;
-        const topLeftX = x * 50 - (left ? 50 : 0);
-        const topLeftY = y * 50 - (top ? 50 : 0);
-        let width = 150;
-        if (!left && !right) {
-          width = 50;
-        } else if (!left && right || !right && left) {
-          width = 100;
-        }
-        let height = 150;
-        if (!top && !bottom) {
-          height = 50;
-        } else if (!top && bottom || !bottom && top) {
-          height = 100;
-        }
-        console.info(topLeftX, topLeftY,width, height);
-        context.clearRect(
-          topLeftX, topLeftY,
-          width, height
-        );
-      }
-    }
+
   }
 
   runAnimation() {
@@ -79,8 +48,7 @@ class BMBombView {
       );
     } else if (state.status === BombStatuses.EXPLOSION) {
       const {x, y} = state.position;
-      const {top, right, bottom, left} = state.directionsForExplosion;
-
+      const {top, right, bottom, left} = this.prepareExplosionsFromState(x, y, state.explosions);
       context.drawImage(
         this.fireImage,
         this.fireImageParts.center[0], 0,
@@ -88,8 +56,7 @@ class BMBombView {
         x * 50, y * 50,
         50, 50
       );
-
-      if (top) {
+      if (top.length) {
         context.drawImage(
           this.fireImage,
           this.fireImageParts.top[0], 0,
@@ -98,7 +65,7 @@ class BMBombView {
           50, 50
         );
       }
-      if (right) {
+      if (right.length) {
         context.drawImage(
           this.fireImage,
           this.fireImageParts.right[0], 0,
@@ -107,7 +74,7 @@ class BMBombView {
           50, 50
         );
       }
-      if (bottom) {
+      if (bottom.length) {
         context.drawImage(
           this.fireImage,
           this.fireImageParts.bottom[0], 0,
@@ -116,7 +83,7 @@ class BMBombView {
           50, 50
         );
       }
-      if (left) {
+      if (left.length) {
         context.drawImage(
           this.fireImage,
           this.fireImageParts.left[0], 0,
@@ -145,5 +112,29 @@ class BMBombView {
       aWidth: 50 - delta * 2,
       aHeight: 50 - delta * 2
     };
+  }
+
+  prepareExplosionsFromState(x, y, explosions) {
+    const directions = {center: [y, x], top: [], right: [], bottom: [], left: []};
+    let index = explosions.length;
+    while (index--) {
+      const explosion = explosions[index];
+      if (explosion[2]) {
+        if (explosion[0] === y && explosion[1] > x) {
+          directions.right.push(explosion);
+        } else if (explosion[0] === y && explosion[1] < x) {
+          directions.left.push(explosion);
+        } else if (explosion[0] > y && explosion[1] === x) {
+          directions.bottom.push(explosion);
+        } else if (explosion[0] < y && explosion[1] === x) {
+          directions.top.push(explosion);
+        }
+      }
+    }
+    directions.top.sort((a, b) => b[0] - a[0]);
+    directions.right.sort((a, b) => a[1] - b[1]);
+    directions.bottom.sort((a, b) => a[0] - b[0]);
+    directions.left.sort((a, b) => b[1] - a[1]);
+    return directions;
   }
 }

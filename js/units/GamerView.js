@@ -22,7 +22,9 @@ class BMGamerView {
   render(context, state, time) {
     const {direction, position, isMoving} = state;
     this.previousState = JSON.parse(JSON.stringify(state));
-    if (state.isExploded) {
+    if (state.status === GamerStatuses.DESTROYED) {
+      // do nothing
+    } else if (state.status === GamerStatuses.EXPLODED) {
       context.drawImage(
         this.imageAsh,
         (position.x - 0.5) * this.cellSize,

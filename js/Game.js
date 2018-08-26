@@ -24,9 +24,10 @@ class BMGame {
 
   async init() {
     await this.gamePanelView.init();
-    const maps = BMGameUtils.generateMaps(this.width, this.height, 1);
+    const maps = await BMGameUtils.generateMaps(this.width, this.height, 1);
     this.map = maps.map;
     this.explosionsMap = maps.explosionsMap;
+    this.destructible = maps.destructible;
     this.gamePanelView.drawBackground();
     this.gamePanelView.drawMap(this.map);
     const gamer = new BMGamer(this);
@@ -74,31 +75,43 @@ class BMGame {
         const isMoving = this.gamePanelView.isMovementKeysPressed();
         const isSpacePressed = this.gamePanelView.isSpacePressed();
 
-        let index = this.bombs.length;
-        while (index--) {
-          const bomb = this.bombs[index];
+        let bombIndex = this.bombs.length;
+        while (bombIndex--) {
+          const bomb = this.bombs[bombIndex];
           const state = bomb.updateTickState(this);
-          if (state.justExploded) {
-            const {x, y} = bomb.getPosition();
-            this.increaseExplosionMapFromBombDirections(x, y, state.directionsForExplosion);
-          }
+          this.increaseExplosionMapFromBombDirections(state.explosionsDelta);
           if (bomb.toBeDestroyed()) {
-            this.bombs.splice(index, 1);
-            const {x, y} = bomb.getPosition();
-            this.decreaseExplosionMapFromBombDirections(x, y, state.directionsForExplosion);
+            this.bombs.splice(bombIndex, 1);
+            this.decreaseExplosionMapFromBombDirections(state.explosions);
           }
         }
 
-        for (const gamer of this.gamers) {
+        let destructIndex = this.destructible.length;
+        while (destructIndex--) {
+          const destruct = this.destructible[destructIndex];
+          destruct.updateTickState(this);
+          if (destruct.toBeDestroyed()) {
+            const {x, y} = destruct.getPosition();
+            this.map[y][x] = BMMapPoints.FREE;
+            this.destructible.splice(destructIndex, 1);
+          }
+        }
+
+        let gamerIndex = this.gamers.length;
+        while (gamerIndex--) {
+          const gamer = this.gamers[gamerIndex];
           const state = await gamer.updateTickState({direction, isMoving, isSpacePressed});
-          if (state.bomb) {
+          if (gamer.toBeDestroyed()) {
+            this.gamers.splice(gamerIndex, 1);
+          } else if (state.bomb) {
             this.bombs.push(state.bomb);
           }
         }
 
         this.gamePanelView.drawTick({
           gamers: this.gamers,
-          bombs: this.bombs
+          bombs: this.bombs,
+          destructible: this.destructible
         });
       }, 30);
     }
@@ -131,22 +144,19 @@ class BMGame {
     return this.gamePanelView;
   }
 
-  increaseExplosionMapFromBombDirections(x, y, directions) {
-    const {top, right, bottom, left} = directions;
-    this.explosionsMap[y][x]++;
-    this.explosionsMap[y - 1][x] += Boolean(top);
-    this.explosionsMap[y][x + 1] += Boolean(right);
-    this.explosionsMap[y + 1][x] += Boolean(bottom);
-    this.explosionsMap[y][x - 1] += Boolean(left);
+  increaseExplosionMapFromBombDirections(explosions) {
+    let index = explosions.length;
+    while (index--) {
+      const [y, x] = explosions[index];
+      this.explosionsMap[y][x]++;
+    }
   }
 
-  decreaseExplosionMapFromBombDirections(x, y, directions) {
-    const {top, right, bottom, left} = directions;
-    this.explosionsMap[y][x]--;
-    this.explosionsMap[y - 1][x] -= Boolean(top);
-    this.explosionsMap[y][x + 1] -= Boolean(right);
-    this.explosionsMap[y + 1][x] -= Boolean(bottom);
-    this.explosionsMap[y][x - 1] -= Boolean(left);
+  decreaseExplosionMapFromBombDirections(explosions) {
+    let index = explosions.length;
+    while (index--) {
+      const [y, x] = explosions[index];
+      this.explosionsMap[y][x]--;
+    }
   }
-
 }
