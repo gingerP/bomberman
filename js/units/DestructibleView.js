@@ -4,7 +4,7 @@ class DestructibleView {
   }
 
   async init() {
-    this.image = await BMGameViewUtils.loadImage('images/wood_01.png');
+    this.image = await GameViewStorage.loadImage('images/wood_01.png');
   }
 
   render(context, state, time) {

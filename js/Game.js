@@ -30,7 +30,7 @@ class BMGame {
     this.destructible = maps.destructible;
     this.gamePanelView.drawBackground();
     this.gamePanelView.drawMap(this.map);
-    const gamer = new BMGamer(this);
+    const gamer = new BMGamer(this, {isLocal: true, color: GamerColors.WHITE});
     await gamer.init();
     this.gamers.push(gamer);
   }

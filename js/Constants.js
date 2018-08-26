@@ -29,3 +29,7 @@ const GamerStatuses = {
   EXPLODED: 'exploded',
   DESTROYED: 'destroyed'
 };
+const GamerColors = {
+  RED: 'red',
+  WHITE: 'white'
+};

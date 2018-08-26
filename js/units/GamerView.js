@@ -1,5 +1,6 @@
 class BMGamerView {
-  constructor() {
+  constructor(color = GamerColors.WHITE) {
+    this.color = color;
     this.movementAnimationStep = 0;
     this.width = 50;
     this.height = 100;
@@ -15,8 +16,8 @@ class BMGamerView {
   }
 
   async init() {
-    this.image = await BMGameViewUtils.loadImage('images/bomberman.png');
-    this.imageAsh = await BMGameViewUtils.loadImage('images/ash.png');
+    this.image = await GameViewStorage.loadImage(`images/bomberman_${this.color}.png`);
+    this.imageAsh = await GameViewStorage.loadImage('images/ash.png');
   }
 
   render(context, state, time) {

@@ -1,5 +1,5 @@
 class BMBomb {
-  constructor(x, y, range = 2) {
+  constructor(x, y, range = 1) {
     this.destroyed = false;
     this.range = range;
     this.preExplosionTime = 3000;

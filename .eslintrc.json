@@ -25,7 +25,9 @@
     "BombStatuses": true,
     "GamerStatuses": true,
     "Destructible": true,
-    "DestructibleView": true
+    "DestructibleView": true,
+    "GameViewStorage": true,
+    "GamerColors": true
   },
   "parserOptions": {
     "parser": "babel-eslint"

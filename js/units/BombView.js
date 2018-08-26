@@ -15,8 +15,8 @@ class BMBombView {
 
   async init() {
     [this.bombImage, this.fireImage] = await Promise.all([
-      BMGameViewUtils.loadImage('images/bomb.png'),
-      BMGameViewUtils.loadImage('images/fire.png')
+      GameViewStorage.loadImage('images/bomb.png'),
+      GameViewStorage.loadImage('images/fire.png')
     ]);
   }
 

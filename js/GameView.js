@@ -47,11 +47,6 @@ class BMGamePanelView extends BMObservable {
   }
 
   bindView() {
-    const bufferCheckbox = document.getElementById('buffer');
-    bufferCheckbox.addEventListener('change', () => {
-      //this.usingBuffer = bufferCheckbox.checked;
-    });
-
     this.mapCanvas = document.getElementById('game-panel-map');
     this.bgCanvas = document.getElementById('game-panel-background');
     this.canvas = document.getElementById('game-panel');
@@ -127,8 +122,8 @@ class BMGamePanelView extends BMObservable {
       background: null
     };
     [this.images.background, this.images.wall] = await Promise.all([
-      BMGameViewUtils.loadImage('images/background_01.png'),
-      BMGameViewUtils.loadImage('images/bricks_01.png')
+      GameViewStorage.loadImage('images/background_01.png'),
+      GameViewStorage.loadImage('images/bricks_01.png')
     ]);
   }
 

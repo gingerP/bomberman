@@ -1,8 +1,10 @@
 class BMGamer {
-  constructor(game, params = {isLocal: true}) {
+  constructor(game, params = {}) {
+    this.id = BMUtils.randomString(20);
     this.explosionDuration = 3000;
     this.explosionStartTime = null;
     this.isLocal = params.isLocal;
+    this.color = params.color || GamerColors.WHITE;
     this.connection = params.connection;
     this.tickDistance = 0.2;
     this.width = 50;
@@ -16,7 +18,7 @@ class BMGamer {
     };
     /** @type BMGame */
     this.game = game;
-    this.view = new BMGamerView(this.game.getView());
+    this.view = new BMGamerView(this.color);
   }
 
   async init() {
