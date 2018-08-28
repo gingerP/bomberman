@@ -1,6 +1,6 @@
 class BMGamer {
   constructor(game, params = {}) {
-    this.id = BMUtils.randomString(20);
+    this.id = `gamer-${BMUtils.randomString(20)}`;
     this.explosionDuration = 3000;
     this.explosionStartTime = null;
     this.isLocal = params.isLocal;
@@ -117,4 +117,13 @@ class BMGamer {
   toBeDestroyed() {
     return this.state.status === GamerStatuses.DESTROYED;
   }
+
+  toJson() {
+    return {
+      id: this.id,
+      state: this.state,
+      __class: this.constructor.name
+    };
+  }
+
 }

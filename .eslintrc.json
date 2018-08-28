@@ -27,7 +27,9 @@
     "Destructible": true,
     "DestructibleView": true,
     "GameViewStorage": true,
-    "GamerColors": true
+    "GamerColors": true,
+    "TeamStatuses": true,
+    "RemoteEvents": true
   },
   "parserOptions": {
     "parser": "babel-eslint"

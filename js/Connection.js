@@ -3,6 +3,7 @@ class BMConnection extends BMObservable {
     super();
     this.remotes = [];
     this.listeners = {};
+    this.teamStatus = null;
   }
 
   async initConnection() {
@@ -50,7 +51,9 @@ class BMConnection extends BMObservable {
     this.localConnection.setLocalDescription(offer);
   }
 
+  // 1 Step
   async createOffer() {
+    this.teamStatus = TeamStatuses.MASTER;
     await this.initConnection();
     await this.generateLocalSdp();
     if (!this.iceCandidates.length) {
@@ -63,24 +66,9 @@ class BMConnection extends BMObservable {
     return btoa(JSON.stringify(body));
   }
 
-  async submitOfferCreation(answerBase64) {
-    try {
-      const remoteAnswer = JSON.parse(atob(answerBase64));
-      this.remotes.push(remoteAnswer);
-      this.localConnection.setRemoteDescription(remoteAnswer.sdp);
-
-      if (remoteAnswer.ice && remoteAnswer.ice.length) {
-        for (const ice of remoteAnswer.ice) {
-          await this.localConnection.addIceCandidate(ice);
-        }
-      }
-    } catch (error) {
-      console.error(error);
-      throw error;
-    }
-  }
-
+  // 2 Step
   async submitOfferReceiving(offerBase64) {
+    this.teamStatus = TeamStatuses.SLAVE;
     if (!this.localConnection) {
       await this.initConnection();
     }
@@ -106,12 +94,44 @@ class BMConnection extends BMObservable {
     return btoa(JSON.stringify(body));
   }
 
+  // 3 Step
+  async submitOfferCreation(answerBase64) {
+    this.teamStatus = TeamStatuses.MASTER;
+    try {
+      const remoteAnswer = JSON.parse(atob(answerBase64));
+      this.remotes.push(remoteAnswer);
+      this.localConnection.setRemoteDescription(remoteAnswer.sdp);
+
+      if (remoteAnswer.ice && remoteAnswer.ice.length) {
+        for (const ice of remoteAnswer.ice) {
+          await this.localConnection.addIceCandidate(ice);
+        }
+      }
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
+
+  getTeamStatus() {
+    return this.teamStatus;
+  }
+
+  isMaster() {
+    return this.teamStatus === TeamStatuses.MASTER;
+  }
+
+  isSlave() {
+    return this.teamStatus === TeamStatuses.SLAVE;
+  }
+
   async send(message) {
     if (this.chanel.readyState === 'open') {
       try {
         await this.chanel.send(JSON.stringify(message));
       } catch (error) {
         console.error(error);
+        throw error;
       }
     }
   }

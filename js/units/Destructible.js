@@ -1,5 +1,6 @@
 class Destructible {
   constructor(x, y) {
+    this.id = `destructible-${BMUtils.randomString(20)}`;
     this.state = {
       strength: 1,
       totalStrength: 1,
@@ -33,5 +34,13 @@ class Destructible {
 
   toBeDestroyed() {
     return !this.state.strength;
+  }
+
+  toJson() {
+    return {
+      id: this.id,
+      state: this.state,
+      __class: this.constructor.name
+    };
   }
 }

@@ -33,3 +33,10 @@ const GamerColors = {
   RED: 'red',
   WHITE: 'white'
 };
+const TeamStatuses = {
+  MASTER: 'master',
+  SLAVE: 'slave'
+};
+const RemoteEvents = {
+  GAME_DATA: 'game-data'
+};

@@ -1,5 +1,6 @@
 class BMBomb {
   constructor(x, y, range = 1) {
+    this.id = `bomb-${BMUtils.randomString(20)}`;
     this.destroyed = false;
     this.range = range;
     this.preExplosionTime = 3000;
@@ -125,5 +126,13 @@ class BMBomb {
 
   getPosition() {
     return this.state.position;
+  }
+
+  toJson() {
+    return {
+      id: this.id,
+      state: this.state,
+      __class: this.constructor.name
+    };
   }
 }

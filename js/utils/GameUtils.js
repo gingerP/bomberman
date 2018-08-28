@@ -88,4 +88,8 @@ class BMGameUtils {
   static canExplodeFromExternalBomb(x, y, explosionsMap) {
     return Boolean(explosionsMap[y] && explosionsMap[y][x]);
   }
+
+  static isClass(data, className) {
+    return data && data.__class === className;
+  }
 }

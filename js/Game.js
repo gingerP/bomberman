@@ -1,6 +1,7 @@
 /** @class BMGame */
 class BMGame {
   constructor(width = 10, height = 10) {
+    this.id = `game-${BMUtils.randomString(20)}`;
     this.borderWidth = 0.0;
     this.gamers = [];
     this.bombs = [];
@@ -15,6 +16,7 @@ class BMGame {
     this.gamePanelView = new BMGamePanelView(50, this.width, this.height);
     this.bindToSettingsView();
     this.bindToConnection();
+    this.bindToRemoteEvents();
     this.offerAction = '';
     this.offerActions = {
       CREATE: 'create',
@@ -57,13 +59,40 @@ class BMGame {
   }
 
   bindToConnection() {
+    const allRemoteEvents = Object.keys(RemoteEvents);
     this.connection.on('connection-opened', () => {
       this.isConnected = true;
       this.settingsView.setConnected();
+      if (this.connection.isMaster()) {
+        this.send(RemoteEvents.GAME_DATA, this.toJson());
+      }
     });
     this.connection.on('connection-closed', () => {
       this.isConnected = false;
       this.settingsView.setDisconnected();
+    });
+    this.connection.on('message-received', (message) => {
+      if (!message || !message.event) {
+        console.warn(`Invalid message received: ${JSON.stringify(message)}`);
+        return;
+      }
+      if (allRemoteEvents.includes(message.event)) {
+        this.emit(message.event, message.data || {});
+        return;
+      }
+      console.warn(`Invalid remove event: '${message.event}'`);
+    });
+  }
+
+  bindToRemoteEvents() {
+    this.on(RemoteEvents.GAME_DATA, (gameData) => {
+      if (BMGameUtils.isClass(gameData, BMGame.constructor.name)) {
+        if (this.connection.isSlave()) {
+
+        } else if (this.connection.isMaster()) {
+
+        }
+      }
     });
   }
 
@@ -158,5 +187,28 @@ class BMGame {
       const [y, x] = explosions[index];
       this.explosionsMap[y][x]--;
     }
+  }
+
+  deserializeGame(gameJson) {
+
+  }
+
+  async send(eventName, message) {
+    await this.connection.send({
+      event: eventName,
+      data: message
+    });
+  }
+
+  toJson() {
+    return {
+      id: this.id,
+      gamers: this.gamers.map(gamer => gamer.toJson()),
+      bombs: this.bombs.map(bomb => bomb.toJson()),
+      map: this.map,
+      width: this.width,
+      height: this.height,
+      __class: this.constructor.name
+    };
   }
 }
