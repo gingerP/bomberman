@@ -38,5 +38,6 @@ const TeamStatuses = {
   SLAVE: 'slave'
 };
 const RemoteEvents = {
-  GAME_DATA: 'game-data'
+  GAME_DATA: 'game-data',
+  CONNECTION_ESTABLISHED: 'connection-established'
 };

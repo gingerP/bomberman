@@ -1,19 +1,36 @@
+/** @class BMGamer */
 class BMGamer {
+  /**
+   * Gamer position definition
+   * @typedef {Object} GamerPosition
+   * @property {number} x x position
+   * @property {number} y y position
+   *
+   * Gamer params definition
+   * @typedef {Object} GamerParams
+   * @property {boolean} local is gamer local
+   * @property {string} [color] gamer color
+   * @property {number} [id] gamer id
+   * @property {GamerPosition} [position] gamer position
+   *
+   * @param {BMGame} game
+   * @param {GamerParams} params
+   */
   constructor(game, params = {}) {
-    this.id = `gamer-${BMUtils.randomString(20)}`;
+    this.id = params.id || `gamer-${BMUtils.randomString(20)}`;
     this.explosionDuration = 3000;
     this.explosionStartTime = null;
-    this.isLocal = params.isLocal;
+    this.local = params.local;
     this.color = params.color || GamerColors.WHITE;
-    this.connection = params.connection;
     this.tickDistance = 0.2;
     this.width = 50;
     this.height = 100;
+    const {position = {}} = params;
     this.state = {
       status: GamerStatuses.ACTIVATED,
       position: {
-        x: 1.5,
-        y: 1.5
+        x: position.x || 1.5,
+        y: position.y || 1.5
       }
     };
     /** @type BMGame */
@@ -23,6 +40,10 @@ class BMGamer {
 
   async init() {
     await this.view.init();
+  }
+
+  getId() {
+    return this.id;
   }
 
   updateNetworkState() {
@@ -100,7 +121,7 @@ class BMGamer {
       this.explosionStartTime = Date.now();
     } else {
       this.updatePosition();
-      if (this.isLocal && this.state.isSpacePressed) {
+      if (this.local && this.state.isSpacePressed) {
         this.state.bomb = await this.dropBomb();
         if (this.state.bomb) {
           this.state.bomb.run();
@@ -108,6 +129,10 @@ class BMGamer {
       }
     }
     return this.state;
+  }
+
+  isLocal() {
+    return this.local;
   }
 
   getState() {
@@ -121,9 +146,22 @@ class BMGamer {
   toJson() {
     return {
       id: this.id,
+      local: this.local,
+      color: this.color,
       state: this.state,
       __class: this.constructor.name
     };
+  }
+
+  static async deserialize(game, gamerData) {
+    const gamer = new BMGamer(game, {
+      id: gamerData.state.id,
+      position: gamerData.state.position,
+      color: gamerData.color,
+      local: gamerData.local
+    });
+    await gamer.init();
+    return gamer;
   }
 
 }

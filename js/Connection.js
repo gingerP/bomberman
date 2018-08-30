@@ -1,6 +1,7 @@
 class BMConnection extends BMObservable {
   constructor() {
     super();
+    this.id = `connection-${BMUtils.randomString(20)}`;
     this.remotes = [];
     this.listeners = {};
     this.teamStatus = null;
@@ -43,6 +44,10 @@ class BMConnection extends BMObservable {
         await this.emit('connection-closed');
       }
     };
+  }
+
+  getId() {
+    return this.id;
   }
 
   async generateLocalSdp() {

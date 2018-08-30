@@ -13,6 +13,10 @@ class Destructible {
     await this.view.init();
   }
 
+  getId() {
+    return this.id;
+  }
+
   updateTickState(game) {
     const explosions = game.getExplosionsMap();
     const {x, y} = this.state.position;

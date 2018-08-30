@@ -22,6 +22,10 @@ class BMBomb {
     await this.view.init();
   }
 
+  getId() {
+    return this.id;
+  }
+
   getState() {
     return this.state;
   }
@@ -134,5 +138,8 @@ class BMBomb {
       state: this.state,
       __class: this.constructor.name
     };
+  }
+
+  static async deserialize(bombData) {
   }
 }

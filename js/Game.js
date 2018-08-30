@@ -1,9 +1,11 @@
 /** @class BMGame */
-class BMGame {
+class BMGame extends BMObservable {
   constructor(width = 10, height = 10) {
+    super();
     this.id = `game-${BMUtils.randomString(20)}`;
     this.borderWidth = 0.0;
     this.gamers = [];
+    this.gamersConnectionsMap = {}; // {connectionId: gamerId, ...}
     this.bombs = [];
     this.map = [];
     this.explosionsMap = [];
@@ -37,6 +39,10 @@ class BMGame {
     this.gamers.push(gamer);
   }
 
+  getId() {
+    return this.id;
+  }
+
   bindToSettingsView() {
     this.settingsView.onCreateOffer(async () => {
       this.offerAction = this.offerActions.CREATE;
@@ -63,21 +69,19 @@ class BMGame {
     this.connection.on('connection-opened', () => {
       this.isConnected = true;
       this.settingsView.setConnected();
-      if (this.connection.isMaster()) {
-        this.send(RemoteEvents.GAME_DATA, this.toJson());
-      }
+      this.emit(RemoteEvents.CONNECTION_ESTABLISHED);
     });
     this.connection.on('connection-closed', () => {
       this.isConnected = false;
       this.settingsView.setDisconnected();
     });
-    this.connection.on('message-received', (message) => {
+    this.connection.on('message-received', async (message) => {
       if (!message || !message.event) {
         console.warn(`Invalid message received: ${JSON.stringify(message)}`);
         return;
       }
       if (allRemoteEvents.includes(message.event)) {
-        this.emit(message.event, message.data || {});
+        await this.emit(message.event, message.data || {});
         return;
       }
       console.warn(`Invalid remove event: '${message.event}'`);
@@ -85,10 +89,31 @@ class BMGame {
   }
 
   bindToRemoteEvents() {
-    this.on(RemoteEvents.GAME_DATA, (gameData) => {
-      if (BMGameUtils.isClass(gameData, BMGame.constructor.name)) {
+    this.on(RemoteEvents.CONNECTION_ESTABLISHED, async () => {
+      if (this.connection.isMaster()) {
+        const slaveGamerId = this.gamersConnectionsMap[this.connection.id];
+        if (!slaveGamerId) {
+          const gamer = new BMGamer(this, {
+            isLocal: false,
+            color: this.getFreeGamerColor(),
+            position: this.getFreeGamerPosition()
+          });
+          await gamer.init();
+          this.gamers.push(gamer);
+        }
+        await this.send(RemoteEvents.GAME_DATA, {
+          slaveGamerId,
+          gameData: this.toJson()
+        });
+      }
+    });
+    this.on(RemoteEvents.GAME_DATA, async ({slaveGamerId, game}) => {
+      if (BMGameUtils.isClass(game, BMGame.constructor.name)) {
         if (this.connection.isSlave()) {
-
+          for (const gamer of game.gamers) {
+            gamer.state.isLocal = gamer.state.id === slaveGamerId;
+          }
+          await this.deserialize(game);
         } else if (this.connection.isMaster()) {
 
         }
@@ -189,7 +214,48 @@ class BMGame {
     }
   }
 
-  deserializeGame(gameJson) {
+  getFreeGamerColor() {
+    // TODO mock
+    return GamerColors.RED;
+  }
+
+  getFreeGamerPosition() {
+    // TODO mock
+    return {
+      x: this.width - 1.5,
+      y: this.height - 1.5
+    };
+  }
+
+  getLocalGamer() {
+    for (const gamer of this.gamers) {
+      if (gamer.isLocal()) {
+        return gamer;
+      }
+    }
+    return null;
+  }
+
+  getGamerById(id) {
+    for (const gamer of this.gamers) {
+      if (gamer.getId() === id) {
+        return gamer;
+      }
+    }
+    return null;
+  }
+
+  async deserialize(game) {
+    this.id = game.id;
+    this.gamers = [];
+    for (const gamerData of game.gamers) {
+      const gamer = await BMGamer.deserialize(this, gamerData);
+      this.gamers.push(gamer);
+    }
+    for (const bombData of game.bombs) {
+      const gamer = await BMGamer.deserialize(this, gamerData);
+      this.gamers.push(gamer);
+    }
 
   }
 
