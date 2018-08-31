@@ -1,19 +1,17 @@
 class BMBomb {
-  constructor(x, y, range = 1) {
-    this.id = `bomb-${BMUtils.randomString(20)}`;
+  constructor(x, y, params = {}) {
+    this.id = params.id || `bomb-${BMUtils.randomString(20)}`;
     this.destroyed = false;
-    this.range = range;
+    this.range = params.range || 1;
     this.preExplosionTime = 3000;
     this.durationOfExplosion = 3000;
     this.explosionStartTime = null;
     this.startTime = null;
-    this.expired = false;
     this.view = new BMBombView(x, y);
     this.state = {
       status: BombStatuses.NOT_ACTIVATED,
       explosions: [],
       explosionsDelta: [],
-      explosionsView: [],
       position: {x, y}
     };
   }
@@ -136,10 +134,15 @@ class BMBomb {
     return {
       id: this.id,
       state: this.state,
+      range: this.range,
       __class: this.constructor.name
     };
   }
 
   static async deserialize(bombData) {
+    const {x, y} = bombData.state.position;
+    const bomd = new BMBomb(x, y, {id: bombData.id, range: bombData.range});
+    await bomd.init();
+    return bomd;
   }
 }
