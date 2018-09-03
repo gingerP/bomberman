@@ -34,7 +34,7 @@ class BMGame extends BMObservable {
     this.destructible = maps.destructible;
     this.gamePanelView.drawBackground();
     this.gamePanelView.drawMap(this.map);
-    const gamer = new BMGamer(this, {isLocal: true, color: GamerColors.WHITE});
+    const gamer = new BMGamer(this, {local: true, color: GamerColors.WHITE});
     await gamer.init();
     this.gamers.push(gamer);
   }
@@ -89,6 +89,32 @@ class BMGame extends BMObservable {
   }
 
   bindToRemoteEvents() {
+
+/*    setTimeout(async () => {
+      let slaveGamerId = this.gamersConnectionsMap[this.connection.id];
+      if (!slaveGamerId) {
+        const slave = new BMGamer(this, {
+          isLocal: false,
+          color: this.getFreeGamerColor(),
+          position: this.getFreeGamerPosition()
+        });
+        await slave.init();
+        this.gamers.push(slave);
+        slaveGamerId = slave.getId();
+        this.gamersConnectionsMap[this.connection.getId()] = slaveGamerId;
+      }
+      const data = {
+        slaveGamerId,
+        game: this.toJson()
+      };
+
+      for (const gamer of data.game.gamers) {
+        gamer.local = gamer.id === slaveGamerId;
+      }
+      await this.deserialize(data.game);
+
+    }, 2000);*/
+
     this.on(RemoteEvents.CONNECTION_ESTABLISHED, async () => {
       if (this.connection.isMaster()) {
         let slaveGamerId = this.gamersConnectionsMap[this.connection.id];
@@ -110,7 +136,7 @@ class BMGame extends BMObservable {
       }
     });
     this.on(RemoteEvents.GAME_DATA, async ({slaveGamerId, game}) => {
-      if (BMGameUtils.isClass(game, BMGame.constructor.name)) {
+      if (BMGameUtils.isClass(game, BMGame.name)) {
         if (this.connection.isSlave()) {
           for (const gamer of game.gamers) {
             gamer.state.isLocal = gamer.state.id === slaveGamerId;
@@ -257,7 +283,6 @@ class BMGame extends BMObservable {
     this.gamers = [];
     this.bombs = [];
     this.destructible = [];
-    this.map = game.map;
 
     for (const gamerData of game.gamers) {
       const gamer = await BMGamer.deserialize(this, gamerData);
@@ -265,14 +290,17 @@ class BMGame extends BMObservable {
     }
 
     for (const bombData of game.bombs) {
-      const gamer = await BMGamer.deserialize(bombData);
-      this.bombs.push(gamer);
+      const bomb = await BMBomb.deserialize(bombData);
+      this.bombs.push(bomb);
     }
 
-    for (const bombData of game.destructible) {
-      const gamer = await Destructible.deserialize(bombData);
-      this.destructible.push(gamer);
+    for (const destructData of game.destructible) {
+      const destruct = await Destructible.deserialize(destructData);
+      this.destructible.push(destruct);
+      const {x, y} = destruct.getPosition();
+      this.map[y][x] = destruct;
     }
+
   }
 
   async send(eventName, message) {
@@ -283,12 +311,25 @@ class BMGame extends BMObservable {
   }
 
   toJson() {
+    const mapJson = [];
+    for (let y = 0; y < this.map.length; y++) {
+      const row = this.map[y];
+      mapJson[y] = [];
+      for (let x = 0; x < row.length; x++) {
+        if (row[x] instanceof Destructible) {
+          mapJson[y][x] = '';
+        } else {
+          mapJson[y][x] = row[x];
+        }
+      }
+    }
+
     return {
       id: this.id,
       gamers: this.gamers.map(gamer => gamer.toJson()),
       bombs: this.bombs.map(bomb => bomb.toJson()),
-      destructible: this.destructible,
-      map: this.map,
+      destructible: this.destructible.map(destruct => destruct.toJson()),
+      map: mapJson,
       width: this.width,
       height: this.height,
       __class: this.constructor.name

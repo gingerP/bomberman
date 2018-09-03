@@ -20,7 +20,7 @@ class BMGamer {
     this.id = params.id || `gamer-${BMUtils.randomString(20)}`;
     this.explosionDuration = 3000;
     this.explosionStartTime = null;
-    this.local = params.local;
+    this.local = Boolean(params.local);
     this.color = params.color || GamerColors.WHITE;
     this.tickDistance = 0.2;
     this.width = 50;
@@ -129,6 +129,10 @@ class BMGamer {
       }
     }
     return this.state;
+  }
+
+  setLocal(local) {
+    this.local = Boolean(local);
   }
 
   isLocal() {

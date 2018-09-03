@@ -48,7 +48,7 @@ class Destructible {
   }
 
   static async deserialize(data) {
-    const state = {data};
+    const {state} = data;
     const {x, y} = state.position;
     const destructible = new Destructible(x, y, {
       id: data.id,

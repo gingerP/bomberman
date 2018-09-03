@@ -141,7 +141,7 @@ class BMBomb {
 
   static async deserialize(bombData) {
     const {x, y} = bombData.state.position;
-    const bomd = new BMBomb(x, y, {id: bombData.id, range: bombData.range});
+    const bomd = new BMBomb(x, y, {id: bombData.id, range: bombData.range, local: bombData.local});
     await bomd.init();
     return bomd;
   }
