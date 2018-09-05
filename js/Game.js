@@ -139,7 +139,7 @@ class BMGame extends BMObservable {
       if (BMGameUtils.isClass(game, BMGame.name)) {
         if (this.connection.isSlave()) {
           for (const gamer of game.gamers) {
-            gamer.state.isLocal = gamer.state.id === slaveGamerId;
+            gamer.local = gamer.id === slaveGamerId;
           }
           await this.deserialize(game);
         } else if (this.connection.isMaster()) {
@@ -283,6 +283,7 @@ class BMGame extends BMObservable {
     this.gamers = [];
     this.bombs = [];
     this.destructible = [];
+    this.map = game.map;
 
     for (const gamerData of game.gamers) {
       const gamer = await BMGamer.deserialize(this, gamerData);
@@ -301,6 +302,8 @@ class BMGame extends BMObservable {
       this.map[y][x] = destruct;
     }
 
+    this.gamePanelView.drawBackground();
+    this.gamePanelView.drawMap(this.map);
   }
 
   async send(eventName, message) {

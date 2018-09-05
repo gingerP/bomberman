@@ -30,16 +30,20 @@ class BMGamePanelView extends BMObservable {
     ];
     this.bindView();
     this.bindKeyBoard();
-    this.setSize(this.width, this.height, this.canvas);
     this.bufferCanvas = document.createElement('canvas');
     this.bufferContext = this.bufferCanvas.getContext('2d');
     this.fpsView = document.querySelector('.fps');
-    this.setSize(this.width, this.height, this.bufferCanvas);
-    this.setSize(this.width, this.height, this.mapCanvas);
-    this.setSize(this.width, this.height, this.bgCanvas);
+    this.apply();
     this.showFps = BMUtils.throttle((fps) => {
       this.fpsView.innerText = `FPS ${fps}`;
     }, 100);
+  }
+
+  apply() {
+    this.setSize(this.width, this.height, this.canvas);
+    this.setSize(this.width, this.height, this.bufferCanvas);
+    this.setSize(this.width, this.height, this.mapCanvas);
+    this.setSize(this.width, this.height, this.bgCanvas);
   }
 
   async init() {
@@ -187,16 +191,13 @@ class BMGamePanelView extends BMObservable {
     this.bgContext.fillRect(0, 0, this.bgCanvas.width, this.bgCanvas.height);
   }
 
-  drawMap(mapParams, context = this.mapContext, force = false) {
-    this.mapRenderTimes++;
+  drawMap(mapParams) {
     for (let y = 0; y < mapParams.length; y++) {
       const row = mapParams[y];
       for (let x = 0; x < row.length; x++) {
         switch (row[x]) {
           case BMMapPoints.WALL:
-            if (this.mapRenderTimes === 1 || force) {
-              this.bgContext.drawImage(this.images.wall, x * this.cellSize, y * this.cellSize);
-            }
+            this.bgContext.drawImage(this.images.wall, x * this.cellSize, y * this.cellSize);
             break;
           default:
         }

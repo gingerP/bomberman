@@ -27,6 +27,9 @@ class BMGamer {
     this.height = 100;
     const {position = {}} = params;
     this.state = {
+      isMoving: false,
+      isSpacePressed: false,
+      bomb: null,
       status: GamerStatuses.ACTIVATED,
       position: {
         x: position.x || 1.5,
