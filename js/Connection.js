@@ -131,9 +131,14 @@ class BMConnection extends BMObservable {
   }
 
   async send(message) {
+    if (!this.chanel) {
+      return;
+    }
     if (this.chanel.readyState === 'open') {
       try {
-        await this.chanel.send(JSON.stringify(message));
+        const messageString = JSON.stringify(message);
+        console.log('Message length: ' + messageString.length);
+        await this.chanel.send(messageString);
       } catch (error) {
         console.error(error);
         throw error;

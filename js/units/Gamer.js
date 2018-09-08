@@ -31,6 +31,8 @@ class BMGamer {
       isSpacePressed: false,
       bomb: null,
       status: GamerStatuses.ACTIVATED,
+      direction: null,
+      time: null,
       position: {
         x: position.x || 1.5,
         y: position.y || 1.5
@@ -107,28 +109,44 @@ class BMGamer {
     return null;
   }
 
-  async updateTickState({direction, isMoving, isSpacePressed}) {
-    this.state.bomb = null;
-    this.state.direction = direction || this.state.direction;
-    this.state.isMoving = isMoving;
-    this.state.isSpacePressed = isSpacePressed;
+  async updateTickState({time, direction, isMoving, isSpacePressed}) {
+    if (this.local) {
+      this.state.time = time;
+      this.state.bomb = null;
+      this.state.direction = direction || this.state.direction;
+      this.state.isMoving = isMoving;
+      this.state.isSpacePressed = isSpacePressed;
 
-    const explosions = this.game.getExplosionsMap();
-    const {x, y} = this.state.position;
-    if (this.state.status === GamerStatuses.EXPLODED) {
-      if (Date.now() - this.explosionStartTime >= this.explosionDuration) {
-        this.state.status = GamerStatuses.DESTROYED;
-      }
-    } else if (BMGameUtils.canExplodeFromExternalBomb(Math.floor(x), Math.floor(y), explosions)) {
-      this.state.status = GamerStatuses.EXPLODED;
-      this.explosionStartTime = Date.now();
-    } else {
-      this.updatePosition();
-      if (this.local && this.state.isSpacePressed) {
-        this.state.bomb = await this.dropBomb();
-        if (this.state.bomb) {
-          this.state.bomb.run();
+      const explosions = this.game.getExplosionsMap();
+      const {x, y} = this.state.position;
+      if (this.state.status === GamerStatuses.EXPLODED) {
+        if (Date.now() - this.explosionStartTime >= this.explosionDuration) {
+          this.state.status = GamerStatuses.DESTROYED;
         }
+      } else if (BMGameUtils.canExplodeFromExternalBomb(Math.floor(x), Math.floor(y), explosions)) {
+        this.state.status = GamerStatuses.EXPLODED;
+        this.explosionStartTime = Date.now();
+      } else {
+        this.updatePosition();
+        if (this.local && this.state.isSpacePressed) {
+          this.state.bomb = await this.dropBomb();
+          if (this.state.bomb) {
+            this.state.bomb.run();
+          }
+        }
+      }
+    } else {
+      this.state.bomb = null;
+
+      const explosions = this.game.getExplosionsMap();
+      const {x, y} = this.state.position;
+      if (this.state.status === GamerStatuses.EXPLODED) {
+        if (Date.now() - this.explosionStartTime >= this.explosionDuration) {
+          this.state.status = GamerStatuses.DESTROYED;
+        }
+      } else if (BMGameUtils.canExplodeFromExternalBomb(Math.floor(x), Math.floor(y), explosions)) {
+        this.state.status = GamerStatuses.EXPLODED;
+        this.explosionStartTime = Date.now();
       }
     }
     return this.state;
@@ -150,19 +168,39 @@ class BMGamer {
     return this.state.status === GamerStatuses.DESTROYED;
   }
 
-  toJson() {
+  deserializeState(state) {
+    this.state.isMoving = state.isMoving;
+    this.state.bomb = state.bomb ? BMBomb.deserialize(state.bomb) : null;
+    this.state.status = state.status;
+    this.state.position = state.position;
+    this.state.time = state.time;
+    this.state.direction = state.direction;
+  }
+
+  serializeState() {
+    return {
+      isMoving: this.state.isMoving,
+      bomb: this.state.bomb ? this.state.bomb.serialize() : null,
+      status: this.state.status,
+      position: this.state.position,
+      time: this.state.time,
+      direction: this.state.direction
+    };
+  }
+
+  serialize() {
     return {
       id: this.id,
       local: this.local,
       color: this.color,
-      state: this.state,
+      state: this.serializeState(),
       __class: this.constructor.name
     };
   }
 
   static async deserialize(game, gamerData) {
     const gamer = new BMGamer(game, {
-      id: gamerData.state.id,
+      id: gamerData.id,
       position: gamerData.state.position,
       color: gamerData.color,
       local: gamerData.local

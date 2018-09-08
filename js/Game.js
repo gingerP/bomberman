@@ -7,6 +7,7 @@ class BMGame extends BMObservable {
     this.gamers = [];
     this.gamersConnectionsMap = {}; // {connectionId: gamerId, ...}
     this.bombs = [];
+    this.tickBombs = [];
     this.map = [];
     this.explosionsMap = [];
     this.width = width;
@@ -90,30 +91,30 @@ class BMGame extends BMObservable {
 
   bindToRemoteEvents() {
 
-/*    setTimeout(async () => {
-      let slaveGamerId = this.gamersConnectionsMap[this.connection.id];
-      if (!slaveGamerId) {
-        const slave = new BMGamer(this, {
-          isLocal: false,
-          color: this.getFreeGamerColor(),
-          position: this.getFreeGamerPosition()
-        });
-        await slave.init();
-        this.gamers.push(slave);
-        slaveGamerId = slave.getId();
-        this.gamersConnectionsMap[this.connection.getId()] = slaveGamerId;
-      }
-      const data = {
-        slaveGamerId,
-        game: this.toJson()
-      };
+    /*    setTimeout(async () => {
+     let slaveGamerId = this.gamersConnectionsMap[this.connection.id];
+     if (!slaveGamerId) {
+     const slave = new BMGamer(this, {
+     isLocal: false,
+     color: this.getFreeGamerColor(),
+     position: this.getFreeGamerPosition()
+     });
+     await slave.init();
+     this.gamers.push(slave);
+     slaveGamerId = slave.getId();
+     this.gamersConnectionsMap[this.connection.getId()] = slaveGamerId;
+     }
+     const data = {
+     slaveGamerId,
+     game: this.serialize()
+     };
 
-      for (const gamer of data.game.gamers) {
-        gamer.local = gamer.id === slaveGamerId;
-      }
-      await this.deserialize(data.game);
+     for (const gamer of data.game.gamers) {
+     gamer.local = gamer.id === slaveGamerId;
+     }
+     await this.deserialize(data.game);
 
-    }, 2000);*/
+     }, 2000);*/
 
     this.on(RemoteEvents.CONNECTION_ESTABLISHED, async () => {
       if (this.connection.isMaster()) {
@@ -129,9 +130,10 @@ class BMGame extends BMObservable {
           slaveGamerId = slave.getId();
           this.gamersConnectionsMap[this.connection.getId()] = slaveGamerId;
         }
+        this.gameStartedAt = Date.now();
         await this.send(RemoteEvents.GAME_DATA, {
           slaveGamerId,
-          game: this.toJson()
+          game: this.serialize()
         });
       }
     });
@@ -142,8 +144,29 @@ class BMGame extends BMObservable {
             gamer.local = gamer.id === slaveGamerId;
           }
           await this.deserialize(game);
+          this.masterGameStartedAt = game.gameStartedAt;
+          this.gameStartedAt = Date.now();
         } else if (this.connection.isMaster()) {
 
+        }
+      } else {
+        console.error('Invalid game data.');
+      }
+    });
+    this.on(RemoteEvents.GAME_STATE, async (state) => {
+      if (state.gamers && state.gamers.length) {
+        for (const gamerJson of state.gamers) {
+          const {id} = gamerJson;
+          for (const gamer of this.gamers) {
+            if (gamer.getId() === id) {
+              gamer.deserializeState(gamerJson.state);
+            }
+          }
+        }
+      }
+      if (state.newBombs && state.newBombs.length) {
+        for (const bombJson of state.newBombs) {
+          this.bombs.push(await BMBomb.deserialize(bombJson));
         }
       }
     });
@@ -153,6 +176,7 @@ class BMGame extends BMObservable {
     this.isCycleRunning = true;
     while (this.isCycleRunning) {
       await BMUtils.runInTimeGap(async () => {
+        this.tickBombs = [];
         const direction = this.gamePanelView.getCurrentDirection();
         const isMoving = this.gamePanelView.isMovementKeysPressed();
         const isSpacePressed = this.gamePanelView.isSpacePressed();
@@ -182,15 +206,11 @@ class BMGame extends BMObservable {
         let gamerIndex = this.gamers.length;
         while (gamerIndex--) {
           const gamer = this.gamers[gamerIndex];
-          let state = {};
-          if (gamer.isLocal()) {
-            state = await gamer.updateTickState({direction, isMoving, isSpacePressed});
-          } else {
-            state = gamer.getState();
-          }
+          const state = await gamer.updateTickState({direction, isMoving, isSpacePressed});
           if (gamer.toBeDestroyed()) {
             this.gamers.splice(gamerIndex, 1);
           } else if (state.bomb) {
+            this.tickBombs.push(state.bomb);
             this.bombs.push(state.bomb);
           }
         }
@@ -200,6 +220,7 @@ class BMGame extends BMObservable {
           bombs: this.bombs,
           destructible: this.destructible
         });
+        await this.shareGameState();
       }, 30);
     }
   }
@@ -307,13 +328,26 @@ class BMGame extends BMObservable {
   }
 
   async send(eventName, message) {
+    if (!eventName) {
+      throw new Error('eventName not defined!');
+    }
     await this.connection.send({
       event: eventName,
       data: message
     });
   }
 
-  toJson() {
+  async shareGameState() {
+    await this.connection.send({
+      event: RemoteEvents.GAME_STATE,
+      data: {
+        gamers: this.gamers.filter(gamer => gamer.isLocal).map(gamer => gamer.serialize()),
+        newBombs: this.tickBombs.map(bomb => bomb.serialize())
+      }
+    });
+  }
+
+  serialize() {
     const mapJson = [];
     for (let y = 0; y < this.map.length; y++) {
       const row = this.map[y];
@@ -329,9 +363,10 @@ class BMGame extends BMObservable {
 
     return {
       id: this.id,
-      gamers: this.gamers.map(gamer => gamer.toJson()),
-      bombs: this.bombs.map(bomb => bomb.toJson()),
-      destructible: this.destructible.map(destruct => destruct.toJson()),
+      gameStartedAt: this.gameStartedAt,
+      gamers: this.gamers.map(gamer => gamer.serialize()),
+      bombs: this.bombs.map(bomb => bomb.serialize()),
+      destructible: this.destructible.map(destruct => destruct.serialize()),
       map: mapJson,
       width: this.width,
       height: this.height,

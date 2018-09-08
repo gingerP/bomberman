@@ -38,6 +38,8 @@ const TeamStatuses = {
   SLAVE: 'slave'
 };
 const RemoteEvents = {
+  GAMER_STATE: 'gamer-state',
   GAME_DATA: 'game-data',
+  GAME_STATE: 'game-state',
   CONNECTION_ESTABLISHED: 'connection-established'
 };

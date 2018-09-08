@@ -1,15 +1,15 @@
 class BMBomb {
   constructor(x, y, params = {}) {
     this.id = params.id || `bomb-${BMUtils.randomString(20)}`;
-    this.destroyed = false;
+    this.destroyed = Boolean(params.destroyed);
     this.range = params.range || 1;
     this.preExplosionTime = 3000;
     this.durationOfExplosion = 3000;
-    this.explosionStartTime = null;
-    this.startTime = null;
+    this.explosionStartTime = params.explosionStartTime;
+    this.startTime = params.startTime;
     this.view = new BMBombView(x, y);
     this.state = {
-      status: BombStatuses.NOT_ACTIVATED,
+      status: params.status || BombStatuses.NOT_ACTIVATED,
       explosions: [],
       explosionsDelta: [],
       position: {x, y}
@@ -130,9 +130,12 @@ class BMBomb {
     return this.state.position;
   }
 
-  toJson() {
+  serialize() {
     return {
       id: this.id,
+      destroyed: this.destroyed,
+      explosionStartTime: this.explosionStartTime,
+      startTime: this.startTime,
       state: this.state,
       range: this.range,
       __class: this.constructor.name
@@ -141,8 +144,15 @@ class BMBomb {
 
   static async deserialize(bombData) {
     const {x, y} = bombData.state.position;
-    const bomd = new BMBomb(x, y, {id: bombData.id, range: bombData.range, local: bombData.local});
-    await bomd.init();
-    return bomd;
+    const bomb = new BMBomb(x, y, {
+      id: bombData.id,
+      range: bombData.range,
+      local: bombData.local,
+      explosionStartTime: bombData.explosionStartTime,
+      startTime: bombData.startTime,
+      status: bombData.state.status
+    });
+    await bomb.init();
+    return bomb;
   }
 }

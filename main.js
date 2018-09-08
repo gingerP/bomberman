@@ -1,6 +1,6 @@
 (async () => {
   try {
-    const game = new BMGame(6, 6);
+    const game = new BMGame(10, 10);
     await game.init();
     await game.runCycle();
   } catch (error) {

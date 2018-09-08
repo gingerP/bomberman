@@ -39,7 +39,7 @@ class Destructible {
     return !this.state.strength;
   }
 
-  toJson() {
+  serialize() {
     return {
       id: this.id,
       state: this.state,
