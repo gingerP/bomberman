@@ -338,13 +338,21 @@ class BMGame extends BMObservable {
   }
 
   async shareGameState() {
-    await this.connection.send({
-      event: RemoteEvents.GAME_STATE,
-      data: {
-        gamers: this.gamers.filter(gamer => gamer.isLocal).map(gamer => gamer.serialize()),
-        newBombs: this.tickBombs.map(bomb => bomb.serialize())
-      }
-    });
+    const stateChanges = this.getStateChanges();
+    if (stateChanges) {
+      await this.connection.send({
+        event: RemoteEvents.GAME_STATE,
+        data: stateChanges
+      });
+    }
+  }
+
+  getStateChanges() {
+    const changes = {
+      gamers: this.gamers.filter(gamer => gamer.isLocal() && gamer.hasChanges()).map(gamer => gamer.serialize()),
+      newBombs: this.tickBombs.map(bomb => bomb.serialize())
+    };
+    return changes.gamers.length || changes.newBombs.length ? changes : null;
   }
 
   serialize() {

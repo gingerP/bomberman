@@ -110,6 +110,7 @@ class BMGamer {
   }
 
   async updateTickState({time, direction, isMoving, isSpacePressed}) {
+    this.previousStateString = JSON.stringify(this.state);
     if (this.local) {
       this.state.time = time;
       this.state.bomb = null;
@@ -166,6 +167,11 @@ class BMGamer {
 
   toBeDestroyed() {
     return this.state.status === GamerStatuses.DESTROYED;
+  }
+
+  hasChanges() {
+    // TODO no guarantees
+    return this.previousStateString !== JSON.stringify(this.state);
   }
 
   deserializeState(state) {
