@@ -12,6 +12,8 @@
       color: @tab-border-color;
       word-break: break-all;
       font-size: .7em;
+      overflow: auto;
+      max-height: 250px;
     }
   }
   .remote-sdp {
@@ -26,6 +28,8 @@
       background-color: @tab-color;
       color: @tab-border-color;
       padding: 10px;
+      overflow: auto;
+      max-height: 250px;
     }
   }
 
@@ -37,8 +41,6 @@
       font-size: 1.1em;
     }
     &-buttons {
-      margin: 0 auto;
-      display: table;
     }
 
     &-receive-offer-container,

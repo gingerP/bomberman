@@ -90,32 +90,6 @@ class BMGame extends BMObservable {
   }
 
   bindToRemoteEvents() {
-
-    /*    setTimeout(async () => {
-     let slaveGamerId = this.gamersConnectionsMap[this.connection.id];
-     if (!slaveGamerId) {
-     const slave = new BMGamer(this, {
-     isLocal: false,
-     color: this.getFreeGamerColor(),
-     position: this.getFreeGamerPosition()
-     });
-     await slave.init();
-     this.gamers.push(slave);
-     slaveGamerId = slave.getId();
-     this.gamersConnectionsMap[this.connection.getId()] = slaveGamerId;
-     }
-     const data = {
-     slaveGamerId,
-     game: this.serialize()
-     };
-
-     for (const gamer of data.game.gamers) {
-     gamer.local = gamer.id === slaveGamerId;
-     }
-     await this.deserialize(data.game);
-
-     }, 2000);*/
-
     this.on(RemoteEvents.CONNECTION_ESTABLISHED, async () => {
       if (this.connection.isMaster()) {
         let slaveGamerId = this.gamersConnectionsMap[this.connection.id];
